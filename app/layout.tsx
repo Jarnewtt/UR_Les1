@@ -40,7 +40,7 @@ export default function RootLayout({
 
         <GlobalNavbar />
 
-        <div className="p-20 mx-auto mt-10">
+        <div className="mx-auto mt-20">
           {children}
         </div>
 
