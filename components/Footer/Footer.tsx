@@ -1,25 +1,31 @@
 "use client"
-import Link from "next/link"
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear()
+import { useStyle } from "@/components/useStyle"
+import { AnimatePresence, motion } from "framer-motion"
+import FooterIndustrial from "@/components/FooterIndustrial"
+import FooterModern     from "@/components/FooterModern"
+
+interface FooterProps {
+  accentColor?: string
+}
+
+export default function Footer({ accentColor }: FooterProps) {
+  const { style } = useStyle()
 
   return (
-    <footer className="w-full bg-black text-center py-4 text-sm text-white">
-      <div className="mb-2">
-        &copy; {currentYear} Your Company. All rights reserved.
-      </div>
-      <div className="flex justify-center space-x-4">
-        <Link href="/terms-of-agreement" className="underline hover:text-gray-400">
-          Terms of Agreement
-        </Link>
-        <Link href="/copyright-regulations" className="underline hover:text-gray-400">
-          Copyright Regulations
-        </Link>
-        <Link href="/cookie-settings" className="underline hover:text-gray-400">
-          Cookie Settings
-        </Link>
-      </div>
-    </footer>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={style}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{    opacity: 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {style === "industrial"
+          ? <FooterIndustrial accentColor={accentColor} />
+          : <FooterModern     accentColor={accentColor} />
+        }
+      </motion.div>
+    </AnimatePresence>
   )
 }

@@ -1,11 +1,6 @@
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">About Us</h1>
-      <p className="text-gray-700">
-        We are a company dedicated to providing the best solutions for your needs. 
-        Our team is passionate about creating modern, scalable, and user-friendly applications.
-      </p>
      <a href="CineCity" className="hover:underline">CineCity</a>
      <br />
      <a href="Architectuur" className="hover:underline">Hélène Binet</a>
