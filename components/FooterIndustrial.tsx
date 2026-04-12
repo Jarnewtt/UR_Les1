@@ -5,28 +5,45 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 
-const C = {
-  bg:     "#080808",
-  ink:    "#F2F0EC",
-  orange: "#FF5C1A",
-  greyLt: "#2A2A28",
-  mid:    "#888884",
-  grey:   "#4A4A48",
-} as const
+// ── DESIGN TOKENS ─────────────────────────────────────────────────────────────
+type Theme = {
+  bg: string; ink: string; orange: string
+  greyLt: string; mid: string; grey: string; isLight: boolean
+}
+
+const DARK: Theme = {
+  bg: "#1E1C1A", ink: "#F2F0EC", orange: "#FF5C1A",
+  greyLt: "#2A2A28", mid: "#888884", grey: "#4A4A48", isLight: false,
+}
+const LIGHT: Theme = {
+  bg: "#0A0A0A", ink: "#F2F0EC", orange: "#FF5C1A",
+  greyLt: "#2A2A28", mid: "#888884", grey: "#4A4A48", isLight: false,
+}
+
+function useIndustrialTheme(): Theme {
+  const [isDark, setIsDark] = useState(true)
+  useEffect(() => {
+    setIsDark(!document.documentElement.classList.contains("theme-light"))
+    const handler = (e: Event) => setIsDark((e as CustomEvent).detail.isDark)
+    window.addEventListener("theme-change", handler)
+    return () => window.removeEventListener("theme-change", handler)
+  }, [])
+  return isDark ? DARK : LIGHT
+}
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 const FOOTER_LINKS = [
-  { name: "Terms of Agreement",    href: "/terms-of-agreement" },
-  { name: "Copyright Regulations", href: "/copyright-regulations" },
-  { name: "Cookie Settings",       href: "/cookie-settings" },
+  { name: "Gebruiksvoorwaarden",  href: "/terms-of-agreement" },
+  { name: "Auteursrecht",         href: "/copyright-regulations" },
+  { name: "Cookie-instellingen",  href: "/cookie-settings" },
 ]
 
 const SOCIAL_LINKS = [
-  { label: "Instagram", href: "#" },
+  { label: "Instagram", href: "https://www.instagram.com/jarne_wtt/" },
 ]
 
-function GlitchWord({ text }: { text: string }) {
+function GlitchWord({ text, T }: { text: string; T: Theme }) {
   const [glitch, setGlitch] = useState(false)
   useEffect(() => {
     const iv = setInterval(() => {
@@ -39,8 +56,8 @@ function GlitchWord({ text }: { text: string }) {
   }, [])
   return (
     <span style={{
-      color: glitch ? C.orange : C.ink,
-      textShadow: glitch ? `2px 0 ${C.orange}, -2px 0 #00ffff` : "none",
+      color: glitch ? T.orange : T.ink,
+      textShadow: glitch ? `2px 0 ${T.orange}, -2px 0 #00ffff` : "none",
       transition: "color 0.05s, text-shadow 0.05s",
     }}>
       {text}
@@ -51,20 +68,23 @@ function GlitchWord({ text }: { text: string }) {
 interface FooterProps { accentColor?: string }
 
 export default function Footer({ accentColor: customColor }: FooterProps) {
+  const T = useIndustrialTheme()
   const currentYear = new Date().getFullYear()
   const pathname = usePathname()
+  const TT = "background 0.45s ease, color 0.45s ease, border-color 0.45s ease"
 
-  let glowColor = customColor || C.orange
+  let glowColor = customColor || T.orange
   if (pathname?.includes("CineCity"))  glowColor = "#a855f7"
   if (pathname?.includes("Chocolate")) glowColor = "#f97316"
 
   return (
     <footer style={{
       position: "relative",
-      background: C.bg,
-      color: C.ink,
+      background: T.bg,
+      color: T.ink,
       fontFamily: "'DM Mono', monospace",
       overflow: "hidden",
+      transition: TT,
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap');
@@ -76,25 +96,25 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
       <div style={{
         position: "absolute", bottom: 0, right: 0,
         width: 280, height: 280, borderRadius: "50%",
-        background: `radial-gradient(circle, ${glowColor}1A 0%, transparent 70%)`,
+        background: `radial-gradient(circle, ${glowColor}18 0%, transparent 70%)`,
         pointerEvents: "none", transition: "background 0.7s",
       }} />
 
-      {/* Top orange accent line */}
+      {/* Metallic sheen */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: 1,
-        background: `linear-gradient(90deg, ${C.orange}, ${C.orange}44 60%, transparent 100%)`,
+        background: `linear-gradient(90deg, ${T.orange}, ${T.orange}44 60%, transparent 100%)`,
       }} />
 
       {/* Left vertical bar */}
       <div style={{
         position: "absolute", left: 0, top: 0, bottom: 0, width: 2,
-        background: `linear-gradient(to bottom, ${C.orange}44, transparent 60%)`,
+        background: `linear-gradient(to bottom, ${T.orange}44, transparent 60%)`,
       }} />
 
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 60px" }}>
+      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 clamp(20px, 5vw, 60px)" }}>
 
-        {/* ── MAIN ROW: name left, socials right ── */}
+        {/* ── MAIN ROW ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -102,12 +122,13 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
           transition={{ duration: 0.7, ease: EASE }}
           style={{
             display: "flex", alignItems: "center",
-            justifyContent: "space-between", gap: 40,
-            padding: "32px 0 28px",
-            borderBottom: `1px solid ${C.greyLt}`,
+            justifyContent: "space-between", flexWrap: "wrap", gap: "16px 40px",
+            padding: "28px 0 24px",
+            borderBottom: `1px solid ${T.greyLt}`,
+            transition: TT,
           }}
         >
-          {/* Name + tagline */}
+          {/* Name */}
           <div style={{ display: "flex", alignItems: "baseline", gap: 20 }}>
             <div>
               <div style={{
@@ -115,14 +136,15 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
                 fontSize: "clamp(36px, 5vw, 64px)",
                 letterSpacing: "0.06em", lineHeight: 1,
               }}>
-                <GlitchWord text="JARNE" />
+                <GlitchWord text="JARNE" T={T} />
               </div>
               <div style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: "clamp(20px, 2.8vw, 36px)",
                 letterSpacing: "0.1em",
-                WebkitTextStroke: `1px ${C.mid}`,
+                WebkitTextStroke: `clamp(0.3px, 0.1vw, 1px) ${T.mid}`,
                 color: "transparent",
+                transition: TT,
               }}>
                 WATERSCHOOT
               </div>
@@ -133,9 +155,10 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
           <div style={{ display: "flex", alignItems: "center", gap: 32, flexShrink: 0 }}>
             <div style={{
               fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase",
-              color: C.orange, display: "flex", alignItems: "center", gap: 8,
+              color: T.orange, display: "flex", alignItems: "center", gap: 8,
+              transition: "color 0.45s ease",
             }}>
-              <span style={{ width: 12, height: 1, background: C.orange, display: "inline-block" }} />
+              <span style={{ width: 12, height: 1, background: T.orange, display: "inline-block", transition: "background 0.45s ease" }} />
               Socials
             </div>
             {SOCIAL_LINKS.map((s, i) => (
@@ -146,12 +169,12 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
                   display: "inline-flex", alignItems: "center", gap: 7,
                   textDecoration: "none",
                   fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-                  color: C.mid, transition: "color 0.2s",
+                  color: T.mid, transition: "color 0.2s",
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = C.ink)}
-                onMouseLeave={e => (e.currentTarget.style.color = C.mid)}
+                onMouseEnter={e => (e.currentTarget.style.color = T.ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
               >
-                <span style={{ fontSize: 8, color: C.orange, opacity: 0.6 }}>
+                <span style={{ fontSize: 8, color: T.orange, opacity: 0.6 }}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 {s.label}
@@ -182,10 +205,10 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
                 style={{
                   textDecoration: "none",
                   fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase",
-                  color: C.grey, transition: "color 0.2s",
+                  color: T.grey, transition: "color 0.2s",
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = C.mid)}
-                onMouseLeave={e => (e.currentTarget.style.color = C.grey)}
+                onMouseEnter={e => (e.currentTarget.style.color = T.mid)}
+                onMouseLeave={e => (e.currentTarget.style.color = T.grey)}
               >
                 {link.name}
               </Link>
@@ -195,9 +218,9 @@ export default function Footer({ accentColor: customColor }: FooterProps) {
           <div style={{
             display: "flex", alignItems: "center", gap: 12,
             fontSize: 9, letterSpacing: "0.24em", textTransform: "uppercase",
-            color: C.grey,
+            color: T.grey, transition: "color 0.45s ease",
           }}>
-            <span style={{ width: 16, height: 1, background: C.greyLt, display: "inline-block" }} />
+            <span style={{ width: 16, height: 1, background: T.greyLt, display: "inline-block", transition: "background 0.45s ease" }} />
             © {currentYear} Jarne Waterschoot — België
           </div>
         </motion.div>

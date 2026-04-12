@@ -3,117 +3,92 @@
 import { useStyle } from "@/components/useStyle"
 import { motion } from "framer-motion"
 
-// Accentkleur volgt de actieve stijl
 const ACCENT = {
-  industrial: "#FF5C1A",  // oranje
-  modern:     "#E8280A",  // rood
+  industrial: "#FF5C1A",
+  modern:     "#E8280A",
 }
 
-const MID    = "#888884"
-const BORDER = "#2A2A28"
-
-function IconIndustrial({ color }: { color: string }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="1" y="3"  width="14" height="2" rx="1" fill={color} />
-      <rect x="1" y="7"  width="14" height="2" rx="1" fill={color} />
-      <rect x="1" y="11" width="14" height="2" rx="1" fill={color} />
-    </svg>
-  )
-}
-
-function IconModern({ color }: { color: string }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="1" y="1" width="6" height="6" rx="2" fill={color} />
-      <rect x="9" y="1" width="6" height="6" rx="2" fill={color} opacity="0.5" />
-      <rect x="1" y="9" width="6" height="6" rx="2" fill={color} opacity="0.5" />
-      <rect x="9" y="9" width="6" height="6" rx="2" fill={color} />
-    </svg>
-  )
-}
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
 export default function StyleToggle() {
   const { style, setStyle } = useStyle()
   const isIndustrial = style === "industrial"
-
-  // Actieve accentkleur — oranje als industrial actief, rood als modern actief
   const accent = ACCENT[style]
 
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 4,
-      padding: "4px",
-      border: `1px solid ${BORDER}`,
-      borderRadius: 4,
-      background: "#0d0d0b",
-      position: "relative",
-      transition: "border-color 0.3s",
-    }}>
+    <>
+      <style>{`
+        .st-wrap {
+          position: relative;
+          display: flex;
+          align-items: center;
+          border-radius: 100px;
+          background: #181816;
+          border: 1px solid #383835;
+          box-shadow:
+            0 1px 0 rgba(255,255,255,0.06) inset,
+            0 4px 16px rgba(0,0,0,0.6);
+          padding: 3px;
+        }
+        .st-pill {
+          position: absolute;
+          top: 3px; bottom: 3px;
+          border-radius: 100px;
+          background: ${accent}20;
+          border: 1px solid ${accent}60;
+          box-shadow: 0 0 16px ${accent}30;
+          pointer-events: none;
+          transition: background .35s, border-color .35s, box-shadow .35s;
+        }
+        .st-btn {
+          position: relative;
+          z-index: 1;
+          padding: 6px 16px;
+          border-radius: 100px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-family: 'DM Mono', monospace;
+          font-size: 9px;
+          letter-spacing: .26em;
+          text-transform: uppercase;
+          white-space: nowrap;
+          transition: color .3s;
+        }
+        .st-btn-active   { color: ${accent}; }
+        .st-btn-inactive { color: #888884; }
+        .st-btn-inactive:hover { color: #AAAAAA; transition: color .2s; }
+      `}</style>
 
-      {/* Sliding highlight — kleur volgt de actieve stijl */}
-      <motion.div
-        layout
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          position: "absolute",
-          top: 3,
-          left: isIndustrial ? 3 : "calc(50% + 1px)",
-          width: "calc(50% - 4px)",
-          bottom: 3,
-          background: `${accent}18`,
-          border: `1px solid ${accent}55`,
-          borderRadius: 2,
-          pointerEvents: "none",
-          transition: "background 0.3s, border-color 0.3s",
-        }}
-      />
+      <div className="st-wrap">
+        <motion.div
+          layout
+          transition={{ duration: 0.35, ease: EASE }}
+          className="st-pill"
+          style={{
+            left:  isIndustrial ? 3 : "calc(50%)",
+            width: "calc(50% - 3px)",
+          }}
+        />
 
-      {/* Knop A — Industrial */}
-      <button
-        onClick={() => setStyle("industrial")}
-        title="Industrieel"
-        aria-label="Switch to Industrial style"
-        style={{
-          background: "none", border: "none", cursor: "none",
-          padding: "5px 10px",
-          display: "flex", alignItems: "center", gap: 6,
-          // Actief = accent van de ACTIEVE stijl, inactief = grijs
-          color: isIndustrial ? ACCENT.industrial : MID,
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
-          transition: "color 0.3s",
-          position: "relative", zIndex: 1, whiteSpace: "nowrap",
-        }}
-      >
-        <IconIndustrial color={isIndustrial ? ACCENT.industrial : MID} />
-        <span>A</span>
-      </button>
+        <button
+          onClick={() => setStyle("industrial")}
+          aria-label="Schakel naar industriële stijl"
+          aria-pressed={isIndustrial}
+          className={`st-btn ${isIndustrial ? "st-btn-active" : "st-btn-inactive"}`}
+        >
+          INDS
+        </button>
 
-      {/* Divider */}
-      <div style={{ width: 1, height: 14, background: BORDER, flexShrink: 0 }} />
-
-      {/* Knop B — Modern */}
-      <button
-        onClick={() => setStyle("modern")}
-        title="Modern"
-        aria-label="Switch to Modern style"
-        style={{
-          background: "none", border: "none", cursor: "none",
-          padding: "5px 10px",
-          display: "flex", alignItems: "center", gap: 6,
-          // Actief = accent van de ACTIEVE stijl (rood), inactief = grijs
-          color: !isIndustrial ? ACCENT.modern : MID,
-          fontFamily: "'DM Mono', monospace",
-          fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
-          transition: "color 0.3s",
-          position: "relative", zIndex: 1, whiteSpace: "nowrap",
-        }}
-      >
-        <IconModern color={!isIndustrial ? ACCENT.modern : MID} />
-        <span>B</span>
-      </button>
-
-    </div>
+        <button
+          onClick={() => setStyle("modern")}
+          aria-label="Schakel naar moderne stijl"
+          aria-pressed={!isIndustrial}
+          className={`st-btn ${!isIndustrial ? "st-btn-active" : "st-btn-inactive"}`}
+        >
+          MOD
+        </button>
+      </div>
+    </>
   )
 }

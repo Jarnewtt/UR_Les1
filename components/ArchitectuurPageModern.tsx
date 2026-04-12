@@ -1,291 +1,673 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'
+import {
+  motion, useInView,
+  AnimatePresence,
+} from 'framer-motion'
 
-type Panel = {
-  id: number;
-  imagePath: string;
-  label: string;
-};
+// ── TOKENS ────────────────────────────────────────────────────────────────────
+type Tokens = {
+  bg: string; surface: string; surfaceAlt: string
+  ink: string; inkSub: string; inkMuted: string
+  red: string; border: string; borderStrong: string
+  isLight: boolean
+}
 
-export default function HeleneBinetOde() {
-  const [isUnfolded, setIsUnfolded] = useState<boolean>(false);
-  const [flippedPanels, setFlippedPanels] = useState<Record<number, boolean>>({});
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+const DARK: Tokens = {
+  bg: "#08080C", surface: "#111118", surfaceAlt: "#0C0C14",
+  ink: "#F0EEFF", inkSub: "#C4C0D8", inkMuted: "#68648C",
+  red: "#E8280A", border: "#1C1C2C", borderStrong: "#2C2C40",
+  isLight: false,
+}
 
-  // --- CURSOR LOGICA ---
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHoveringLink, setIsHoveringLink] = useState(false);
+const LIGHT: Tokens = {
+  bg: "#F4F2FA", surface: "#ECEAF4", surfaceAlt: "#E4E2EE",
+  ink: "#080812", inkSub: "#28263C", inkMuted: "#5A5872",
+  red: "#CC1E00", border: "#D8D6E8", borderStrong: "#C0BDCE",
+  isLight: true,
+}
 
+function useTheme(): Tokens {
+  const [isDark, setIsDark] = useState(true)
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    }
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    setIsDark(!document.documentElement.classList.contains("theme-light"))
+    const handler = (e: Event) => setIsDark((e as CustomEvent).detail.isDark)
+    window.addEventListener("theme-change", handler)
+    return () => window.removeEventListener("theme-change", handler)
+  }, [])
+  return isDark ? DARK : LIGHT
+}
 
-  const toggleFlip = (index: number) => {
-    if (!isUnfolded) return;
-    setFlippedPanels((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
-  };
+// ── TYPES ─────────────────────────────────────────────────────────────────────
+type Panel = { id: number; imagePath: string; label: string; sub?: string }
+type Props  = { heroTop?: string; heroBottom?: string; tribute?: string; introText?: string; panels?: Panel[] }
 
-  const contrasts = [
-    "Chaotische lijn", "Organische lijn",
-    "Geordende lijn", "",
-    "Abstracte lijn", "Rechte lijn",
-    "Ritmische lijn", "",
-    "Doorlopende lijn", "Gebogen lijn",
-    "Onregelmatige lijn", "Onderbroken lijn"
-  ];
+const DEFAULT_PANELS: Panel[] = Array.from({ length: 12 }, (_, i) => ({
+  id: i + 1,
+  imagePath: `/img/Paneel_${i + 1}.jpg`,
+  label: [
+    "Chaotische lijn","Organische lijn","Geordende lijn","",
+    "Abstracte lijn","Rechte lijn","Ritmische lijn","",
+    "Doorlopende lijn","Gebogen lijn","Onregelmatige lijn","Onderbroken lijn",
+  ][i],
+}))
 
-  const panels: Panel[] = Array.from({ length: 12 }).map((_, i) => ({
-    id: i + 1,
-    imagePath: `/img/Paneel_${i + 1}.jpg`,
-    label: contrasts[i]
-  }));
+const GALLERY = Array.from({ length: 10 }, (_, i) => `/img/Gallerij_${i + 1}.jpg`)
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
-  const galleryImages = [
-    "/img/Gallerij_1.jpg", "/img/Gallerij_2.jpg", "/img/Gallerij_3.jpg",
-    "/img/Gallerij_4.jpg", "/img/Gallerij_5.jpg", "/img/Gallerij_6.jpg",
-    "/img/Gallerij_7.jpg", "/img/Gallerij_8.jpg", "/img/Gallerij_9.jpg",
-    "/img/Gallerij_10.jpg"
-  ];
+// ── CURSOR ────────────────────────────────────────────────────────────────────
 
-  // --- NAVIGATIE LOGICA GALLERIJ ---
-  const currentIndex = selectedImage ? galleryImages.indexOf(selectedImage) : -1;
+// ── GRAIN ─────────────────────────────────────────────────────────────────────
+function Grain({ isLight }: { isLight: boolean }) {
+  return (
+    <svg style={{ position: "fixed", inset: 0, zIndex: 9990, opacity: isLight ? 0.02 : 0.04,
+      pointerEvents: "none", width: "100%", height: "100%" }}>
+      <filter id="mod-grain">
+        <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves={4} stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+      </filter>
+      <rect width="100%" height="100%" filter="url(#mod-grain)"/>
+    </svg>
+  )
+}
 
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const nextIdx = (currentIndex + 1) % galleryImages.length;
-    setSelectedImage(galleryImages[nextIdx]);
-  };
+// ── REVEAL ────────────────────────────────────────────────────────────────────
+function RevealText({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, margin: "-60px" })
+  return (
+    <div ref={ref} style={{ overflow: "hidden" }}>
+      <motion.div
+        initial={{ y: "105%", skewY: 3 }}
+        animate={inView ? { y: 0, skewY: 0 } : {}}
+        transition={{ duration: 0.9, delay, ease: EASE }}>
+        {children}
+      </motion.div>
+    </div>
+  )
+}
 
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const prevIdx = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
-    setSelectedImage(galleryImages[prevIdx]);
-  };
+// ── PANEL CARD ────────────────────────────────────────────────────────────────
+function PanelCard({ panel, index, isUnfolded, C }: { panel: Panel; index: number; isUnfolded: boolean; C: Tokens }) {
+  const [flipped, setFlipped] = useState(false)
+  const col = index % 6, row = Math.floor(index / 6)
 
   return (
-    <div className="min-h-screen bg-black text-white font-light selection:bg-white selection:text-black outline-none cursor-none">
-      
-      {/* --- CUSTOM CURSOR --- */}
-      <div 
-        className={`fixed top-0 left-0 w-8 h-8 rounded-full border border-white/50 pointer-events-none z-[200] mix-blend-difference transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-out ${isHoveringLink ? 'scale-[2.5] bg-white/10' : 'scale-100'}`}
-        style={{ left: `${mousePos.x}px`, top: `${mousePos.y}px` }}
-      />
-      <div 
-        className={`fixed top-0 left-0 w-2 h-2 bg-red-600 rounded-full pointer-events-none z-[200] transform -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ${isHoveringLink ? 'opacity-0' : 'opacity-100'}`}
-        style={{ left: `${mousePos.x}px`, top: `${mousePos.y}px` }}
-      />
+    <div
+      onClick={() => isUnfolded && setFlipped(f => !f)}
+      style={{
+        position: "absolute", width: 160, height: 250,
+        transform: isUnfolded
+          ? `translateX(${(col - 2.5) * 175}px) translateY(${(row - 0.5) * 310}px) rotateY(${flipped ? 180 : 0}deg) scale(1)`
+          : `translateX(${(index - 5.5) * 4}px) translateY(${index * 1.5}px) rotateY(${index * 4}deg) rotateZ(${index * 0.6}deg) scale(0.82)`,
+        transition: "transform 1.4s cubic-bezier(0.2,0.85,0.2,1)",
+        transformStyle: "preserve-3d",
+        zIndex: isUnfolded ? 10 : 30 - index,
+        cursor: isUnfolded ? "none" : "default",
+      }}>
 
-      <style jsx>{`
-        .perspective-container { perspective: 3000px; }
-        .preserve-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        .panel-transition { transition: transform 1.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .grayscale-fade { filter: grayscale(100%) contrast(1.1); transition: filter 1s ease, transform 1s ease; }
-        .panel-hover:hover .grayscale-fade { filter: grayscale(0%) contrast(1); }
-        
-        .lightbox-enter { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        :global(body) {
-          cursor: none;
-          background-color: black;
-        }
-      `}</style>
-
-      {/* HERO SECTION */}
-      <section className="relative min-h-screen flex flex-col justify-start px-8 -mt-20 pt-48 pb-12 border-b border-white/5 bg-black">
-        <h1 className="relative z-10 text-[18vw] font-bold leading-[0.75] tracking-tighter uppercase mb-20">
-          Hélène <br /> Binet
-        </h1>
-        
-        <div className="relative z-10 mt-auto flex justify-between items-baseline">
-          <p className="text-xs tracking-[0.6em] uppercase opacity-40 italic">De 5 Tegenstellingen</p>
-          <p className="text-xs font-mono opacity-40">FOMU Antwerpen — 2025</p>
+      {/* Front */}
+      <div
+        style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden",
+          background: C.surface, border: `1px solid ${C.border}`, overflow: "hidden",
+          transition: "border-color 0.3s" }}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = `${C.red}66`)}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}>
+        <img src={panel.imagePath} alt={panel.label}
+          style={{ width: "100%", height: "100%", objectFit: "cover",
+            filter: "grayscale(100%) contrast(1.2)", opacity: C.isLight ? 0.85 : 0.7,
+            transition: "filter 0.8s ease, opacity 0.8s ease" }}
+          onMouseEnter={e => { e.currentTarget.style.filter = "grayscale(0%) contrast(1)"; e.currentTarget.style.opacity = "1" }}
+          onMouseLeave={e => { e.currentTarget.style.filter = "grayscale(100%) contrast(1.2)"; e.currentTarget.style.opacity = C.isLight ? "0.85" : "0.7" }}
+        />
+        <div style={{ position: "absolute", top: 12, left: 12, fontFamily: "'DM Mono', monospace",
+          fontSize: 9, letterSpacing: "0.2em", color: `${C.red}88`,
+          background: C.isLight ? "rgba(244,242,250,0.8)" : "rgba(8,8,12,0.65)", padding: "3px 7px" }}>
+          {String(index + 1).padStart(2, "0")}
         </div>
-      </section>
-
-      {/* Project Introductie */}
-      <section className="px-8 py-24 max-w-4xl border-b border-white/5">
-        <div className="space-y-10">
-          <h2 className="text-xs tracking-[0.4em] uppercase opacity-30">Onderzoek & Tribuut</h2>
-          <p className="text-2xl md:text-3xl leading-snug font-light">
-            "Hoe zou <span className="italic">Hélène Binet</span> het doen?" 
-          </p>
-          <p className="text-lg opacity-60 leading-relaxed max-w-2xl">
-            In opdracht van het <span className="font-bold">FOMU te Antwerpen</span> verkent dit project de grenzen van de architecturale waarneming. Door de lens van Binet's analoge, contrastrijke stijl hebben we vijf fundamentele tegenstellingen in lijnen vastgelegd. 
-            <br /><br />
-            Het is een zoektocht naar hoe licht een <span className="text-white italic">geordende lijn</span> kan transformeren tot chaos, of hoe een <span className="text-white">onderbroken lijn</span> een gevoel van oneindigheid kan oproepen.
-          </p>
-        </div>
-      </section>
-
-      {/* Interaction Trigger */}
-      <div 
-        onClick={() => setIsUnfolded(!isUnfolded)}
-        onMouseEnter={() => setIsHoveringLink(true)}
-        onMouseLeave={() => setIsHoveringLink(false)}
-        className="group cursor-none border-b border-white/5 py-12 px-8 flex justify-between items-center hover:bg-white/5 transition-colors"
-      >
-        <span className="text-[2vw] uppercase tracking-widest font-bold">
-          {isUnfolded ? "Sluit Studie" : "Bekijk de Lijnen"}
-        </span>
-        <div className="w-24 h-[1px] bg-white group-hover:w-48 transition-all duration-700"></div>
       </div>
 
-      {/* Leporello Section */}
-      <section className="relative py-32 perspective-container overflow-hidden">
-        <div className="relative w-full h-[650px] flex items-center justify-center">
-          {panels.map((panel, index) => {
-            const isFlipped = !!flippedPanels[index];
-            const rowIndex = Math.floor(index / 6);
-            const colIndex = index % 6;
+      {/* Back — inverted for visual punch */}
+      <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden",
+        transform: "rotateY(180deg)",
+        background: C.isLight ? "#080812" : "#F0EEFF",
+        padding: "20px 16px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 9, letterSpacing: "0.3em", textTransform: "uppercase",
+            color: C.isLight ? "rgba(240,238,255,0.38)" : "rgba(8,8,18,0.38)", marginBottom: 8 }}>
+            Tegenstelling
+          </div>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 13, fontWeight: 700,
+            letterSpacing: "0.01em", lineHeight: 1.2,
+            color: C.isLight ? "#F0EEFF" : "#080812" }}>
+            {panel.label.toUpperCase()}
+          </div>
+        </div>
+        <div>
+          <div style={{ height: 1, background: C.red, opacity: 0.45, marginBottom: 10 }} />
+          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", lineHeight: 1.8,
+            color: C.isLight ? "rgba(240,238,255,0.42)" : "rgba(8,8,18,0.42)" }}>
+            Studie naar Lijnen<br/>FOMU × Binet 2025
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
-            const pWidth = 170;
-            const pHeight = 260;
-            const panelGap = 110;
+// ── GALLERY ITEM ──────────────────────────────────────────────────────────────
+function GalleryItem({ src, index, onClick, C }: { src: string; index: number; onClick: () => void; C: Tokens }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, margin: "-80px" })
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay: (index % 5) * 0.07, ease: EASE }}
+      onClick={onClick}
+      style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden",
+        background: C.surface, cursor: "none", border: `0.5px solid ${C.border}` }}>
+      <img src={src} alt={`Fragment ${index + 1}`}
+        style={{ width: "100%", height: "100%", objectFit: "cover",
+          filter: "grayscale(100%) contrast(1.1)",
+          opacity: C.isLight ? 0.8 : 0.65,
+          transition: "filter 0.9s ease, opacity 0.9s ease, transform 1.1s ease",
+          transform: "scale(1.02)" }}
+        onMouseEnter={e => { e.currentTarget.style.filter = "grayscale(0%)"; e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "scale(1.06)" }}
+        onMouseLeave={e => { e.currentTarget.style.filter = "grayscale(100%) contrast(1.1)"; e.currentTarget.style.opacity = C.isLight ? "0.8" : "0.65"; e.currentTarget.style.transform = "scale(1.02)" }}
+      />
+      <div style={{ position: "absolute", bottom: 12, left: 12, fontSize: 8, letterSpacing: "0.24em",
+        textTransform: "uppercase", color: "transparent", padding: "4px 8px",
+        transition: "color 0.35s, background 0.35s" }}
+        onMouseEnter={e => { e.currentTarget.style.color = C.inkSub; e.currentTarget.style.background = C.isLight ? "rgba(244,242,250,0.9)" : "rgba(8,8,12,0.7)" }}
+        onMouseLeave={e => { e.currentTarget.style.color = "transparent"; e.currentTarget.style.background = "transparent" }}>
+        P_{String(index + 1).padStart(2, "0")} — Vergroot
+      </div>
+    </motion.div>
+  )
+}
 
-            let transformStyle = "";
-            if (!isUnfolded) {
-              transformStyle = `translateX(0) translateY(0) rotateY(${index * 3}deg) rotateZ(${index * 0.5}deg) scale(0.85)`;
-            } else {
-              const xShift = (colIndex - 2.5) * pWidth;
-              const yShift = (rowIndex - 0.5) * (pHeight + panelGap);
-              transformStyle = `translateX(${xShift}px) translateY(${yShift}px) ${isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'} scale(1)`;
-            }
+// ── MAIN ──────────────────────────────────────────────────────────────────────
+export default function ArchitectuurPageModern({
+  heroTop   = "Shadow &",
+  heroBottom = "Light",
+  tribute   = "Een tribuut aan Hélène Binet",
+  introText = "",
+  panels    = DEFAULT_PANELS,
+}: Props) {
+  const C = useTheme()
+  const [isUnfolded, setIsUnfolded] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [isReady, setIsReady] = useState(false)
+  const TT = "background 0.4s ease, color 0.4s ease, border-color 0.4s ease"
 
-            return (
-              <div
-                key={panel.id}
-                onClick={() => toggleFlip(index)}
-                onMouseEnter={() => setIsHoveringLink(true)}
-                onMouseLeave={() => setIsHoveringLink(false)}
-                className="absolute cursor-none preserve-3d panel-transition panel-hover"
-                style={{ 
-                  width: `${pWidth}px`,
-                  height: `${pHeight}px`,
-                  transform: transformStyle, 
-                  zIndex: isUnfolded ? 10 : 30 - index,
-                }}
-              >
-                <div className="absolute inset-0 backface-hidden bg-[#050505] overflow-hidden border border-white/5">
-                  <img 
-                    src={panel.imagePath} 
-                    alt={panel.label} 
-                    className="w-full h-full object-cover grayscale-fade"
-                  />
-                </div>
+  useEffect(() => { setIsReady(true) }, [])
 
-                <div className="absolute inset-0 backface-hidden rotate-y-180 bg-white text-black p-6 flex flex-col justify-between">
-                  <div className="space-y-1">
-                    <span className="text-[8px] tracking-[0.3em] uppercase opacity-40">Tegenstelling</span>
-                    <h3 className="text-sm font-bold leading-tight">{panel.label.toUpperCase()}</h3>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-[0.5px] w-full bg-black/20"></div>
-                    <p className="text-[8px] uppercase tracking-[0.2em] leading-relaxed opacity-60">
-                      Studie naar Lijnen <br /> FOMU x Binet
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (lightboxIndex === null) return
+      if (e.key === "Escape") setLightboxIndex(null)
+      if (e.key === "ArrowRight") setLightboxIndex(i => (i! + 1) % GALLERY.length)
+      if (e.key === "ArrowLeft")  setLightboxIndex(i => (i! - 1 + GALLERY.length) % GALLERY.length)
+    }
+    window.addEventListener("keydown", h)
+    return () => window.removeEventListener("keydown", h)
+  }, [lightboxIndex])
+
+  return (
+    <div style={{ minHeight: "100vh", background: C.bg, color: C.ink, overflowX: "hidden",
+      cursor: "none", fontFamily: "'DM Mono', monospace", transition: TT }}>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { cursor: none !important; }
+        ::selection { background: ${C.red}; color: #fff; }
+        ::-webkit-scrollbar { width: 1px; }
+        ::-webkit-scrollbar-thumb { background: ${C.red}60; }
+
+        /* ── Responsive ── */
+        .mod-intro-grid {
+          display: grid; grid-template-columns: 1fr; gap: 40px; align-items: start;
+          padding: clamp(40px,7vw,96px) clamp(16px,5vw,60px);
+        }
+        @media (min-width: 768px) { .mod-intro-grid { grid-template-columns: 1fr 1fr; gap: 80px; } }
+
+        .mod-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 640px)  { .mod-gallery-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .mod-gallery-grid { grid-template-columns: repeat(5, 1fr); } }
+
+        .mod-leporello-mobile { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 20px; }
+        .mod-leporello-3d     { display: none; }
+        @media (min-width: 768px) {
+          .mod-leporello-mobile { display: none; }
+          .mod-leporello-3d     { display: block; }
+        }
+        .mod-meta { display: none; }
+        @media (min-width: 768px) { .mod-meta { display: block; } }
+      `}</style>
+
+
+      <Grain isLight={C.isLight} />
+
+      {/* ── FIXED TOP ACCENT LINE ── */}
+      <motion.div
+        initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+        transition={{ duration: 1.4, ease: EASE }}
+        style={{ position: "fixed", top: 0, left: 0, right: 0, height: 2,
+          background: C.red, transformOrigin: "left", zIndex: 999,
+          boxShadow: `0 0 20px ${C.red}66` }}
+      />
+
+      {/* ══════════════════════════════════════════════════════════
+          ── HERO ──
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ position: "relative", minHeight: "100vh", overflow: "hidden",
+        display: "flex", flexDirection: "column", justifyContent: "flex-end",
+        borderBottom: `1px solid ${C.border}` }}>
+
+        {/* Geometric mid-line */}
+        <motion.div
+          initial={{ scaleX: 0 }} animate={{ scaleX: 1 }}
+          transition={{ duration: 1.8, delay: 0.3, ease: EASE }}
+          style={{ position: "absolute", top: "42%", left: 0, right: 0, height: 1,
+            background: `linear-gradient(90deg, ${C.border}, ${C.red}44 40%, ${C.border} 100%)`,
+            transformOrigin: "left", zIndex: 0, pointerEvents: "none" }}
+        />
+
+        {/* Left vertical accent */}
+        <motion.div
+          initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
+          transition={{ duration: 1.3, delay: 0.5, ease: EASE }}
+          style={{ position: "absolute", left: 28, top: "8%", bottom: "12%", width: 1, zIndex: 2,
+            background: `linear-gradient(to bottom, transparent, ${C.red}66 30%, ${C.red}66 70%, transparent)`,
+            transformOrigin: "top" }}
+        />
+
+        {/* Top-right metadata — desktop only */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.8, duration: 0.8 }}
+          className="mod-meta"
+          style={{ position: "absolute", top: 52, right: 60, textAlign: "right",
+            fontSize: 9, letterSpacing: "0.22em", textTransform: "uppercase",
+            color: C.inkMuted, lineHeight: 2.8, zIndex: 10, transition: "color 0.4s" }}>
+          <div>Antwerpen — FOMU</div>
+          <div>Fotografische studie</div>
+          <div style={{ color: C.red }}>Hélène Binet 2025</div>
+        </motion.div>
+
+        {/* Hero content */}
+        <div style={{ position: "relative", zIndex: 5,
+          padding: "0 clamp(20px,5vw,60px) clamp(40px,6vw,72px)" }}>
+
+          {/* Label */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={isReady ? { opacity: 1 } : {}}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            style={{ fontSize: 9, letterSpacing: "0.36em", textTransform: "uppercase",
+              color: C.inkMuted, marginBottom: 28, display: "flex", alignItems: "center", gap: 14,
+              transition: "color 0.4s" }}>
+            <span style={{ width: 22, height: 1, background: `${C.red}88`, display: "inline-block" }} />
+            Visuele Studie — Lijn als taal
+          </motion.div>
+
+          {/* Title — Space Grotesk heavy + stroke variant */}
+          <div>
+            <div style={{ overflow: "hidden" }}>
+              <motion.h1
+                initial={{ y: "110%", skewY: 4 }} animate={isReady ? { y: 0, skewY: 0 } : {}}
+                transition={{ duration: 1.1, delay: 0.3, ease: EASE }}
+                style={{ fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: "clamp(36px,13vw,180px)", lineHeight: 0.84,
+                  fontWeight: 700, letterSpacing: "-0.03em", color: C.ink,
+                  transition: "color 0.4s" }}>
+                {heroTop}
+              </motion.h1>
+            </div>
+            <div style={{ overflow: "hidden" }}>
+              <motion.h1
+                initial={{ y: "110%", skewY: 4 }} animate={isReady ? { y: 0, skewY: 0 } : {}}
+                transition={{ duration: 1.1, delay: 0.48, ease: EASE }}
+                style={{ fontFamily: "'Space Grotesk', sans-serif",
+                  fontSize: "clamp(36px,13vw,180px)", lineHeight: 0.84,
+                  fontWeight: 700, letterSpacing: "-0.03em",
+                  color: "transparent", WebkitTextStroke: `clamp(0.5px, 0.2vw, 2px) ${C.red}` }}>
+                {heroBottom}
+              </motion.h1>
+            </div>
+          </div>
+
+          {/* Tribute line */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={isReady ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.9, duration: 0.9, ease: EASE }}
+            style={{ marginTop: 36, display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ width: 28, height: 1, background: C.red, opacity: 0.7, flexShrink: 0 }} />
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontStyle: "italic", fontWeight: 300,
+              fontSize: 15, color: C.inkSub, transition: "color 0.4s" }}>
+              {tribute}
+            </span>
+          </motion.div>
+
+          {/* Bottom strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={isReady ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 1.4, duration: 0.9 }}
+            style={{ marginTop: 40, borderTop: `1px solid ${C.border}`, paddingTop: 24,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              gap: 20, flexWrap: "wrap", transition: "border-color 0.4s" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase",
+                color: C.inkMuted, transition: "color 0.4s" }}>
+                Jarne Waterschoot
+              </span>
+              <span style={{ width: 3, height: 3, borderRadius: "50%", background: C.red, opacity: 0.5, flexShrink: 0 }} />
+              <span style={{ fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase",
+                color: C.inkMuted, transition: "color 0.4s" }}>
+                Fotografische studie
+              </span>
+            </div>
+            <motion.a
+              href="#archief"
+              whileHover={{ borderColor: C.red, color: C.ink, background: `${C.red}14` }}
+              whileTap={{ scale: 0.97 }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 12,
+                border: `1px solid ${C.border}`, color: C.inkMuted, fontSize: 9,
+                letterSpacing: "0.22em", textTransform: "uppercase", padding: "14px 28px",
+                transition: "all 0.3s", textDecoration: "none" }}>
+              Bekijk het werk
+              <motion.span animate={{ y: [0, 5, 0] }} transition={{ duration: 1.8, repeat: Infinity }}>↓</motion.span>
+            </motion.a>
+          </motion.div>
         </div>
       </section>
 
-      {/* 10 Foto Galerij */}
-      <section className="w-full">
-        <div className="px-8 py-6 border-t border-white/5">
-          <h2 className="text-xs tracking-[0.8em] uppercase opacity-30">Fotografisch Archief: 10 Fragmenten</h2>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 w-full bg-black">
-          {galleryImages.map((src, index) => (
-            <div 
-              key={index} 
-              onClick={() => setSelectedImage(src)}
-              onMouseEnter={() => setIsHoveringLink(true)}
-              onMouseLeave={() => setIsHoveringLink(false)}
-              className="group relative overflow-hidden aspect-[3/4] bg-black border-[0.5px] border-white/5 cursor-none"
-            >
-              <img 
-                src={src} 
-                alt={`Hélène Binet Stijlstudie ${index + 1}`}
-                className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-1000 grayscale group-hover:grayscale-0 contrast-110"
-              />
-              <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <p className="text-[8px] tracking-widest uppercase bg-black/50 px-2 py-1">P_{index + 1} — Vergroot</p>
-              </div>
+      {/* ══════════════════════════════════════════════════════════
+          ── INTRO ──
+          ══════════════════════════════════════════════════════════ */}
+      <section className="mod-intro-grid" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
+        <div>
+          <RevealText>
+            <div style={{ fontSize: 9, letterSpacing: "0.32em", textTransform: "uppercase",
+              color: C.red, marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ width: 18, height: 1, background: C.red, opacity: 0.7, display: "inline-block" }} />
+              Project — FOMU Antwerpen
             </div>
+          </RevealText>
+          <RevealText delay={0.1}>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
+              fontSize: "clamp(28px,4vw,54px)", letterSpacing: "-0.02em", lineHeight: 0.95,
+              color: C.ink, marginBottom: 28, transition: "color 0.4s" }}>
+              Mijn blik op<br />architecturaal<br />
+              <span style={{ WebkitTextStroke: `clamp(0.4px, 0.15vw, 1.5px) ${C.red}`, color: "transparent" }}>
+                licht &amp; schaduw
+              </span>
+            </h2>
+          </RevealText>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.9, delay: 0.2, ease: EASE }}>
+
+          {introText ? (
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15,
+              lineHeight: 1.95, color: C.inkSub, marginBottom: 28, transition: "color 0.4s" }}>
+              {introText}
+            </p>
+          ) : (
+            <>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15,
+                lineHeight: 1.95, color: C.inkSub, marginBottom: 28, transition: "color 0.4s" }}>
+                In opdracht van het <span style={{ color: C.ink }}>FOMU te Antwerpen</span> analyseerde ik het fotografisch werk van Hélène Binet. Vanuit haar visuele stijl onderzocht ik hoe lijnen een centrale rol spelen — vertaald naar vijf visuele tegenstellingen in een leporello en one-pager.
+              </p>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15,
+                lineHeight: 1.95, color: C.inkSub, transition: "color 0.4s" }}>
+                Binet's analoge, contrastrijke manier van kijken diende als inspiratie — maar de beelden, keuzes en compositie zijn volledig van{" "}
+                <span style={{ fontStyle: "italic" }}>mijn hand</span>.
+              </p>
+            </>
+          )}
+
+          <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "repeat(2,1fr)",
+            gap: 1, background: C.border, transition: "background 0.4s" }}>
+            {[["05","Tegenstellingen"],["10","Foto's"]].map(([n, l], i) => (
+              <div key={i} style={{ background: C.bg, padding: "24px 20px", transition: TT }}>
+                <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 36,
+                  fontWeight: 700, color: C.ink, lineHeight: 1, transition: "color 0.4s" }}>
+                  {n}
+                </div>
+                <div style={{ fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase",
+                  color: C.inkMuted, marginTop: 6, transition: "color 0.4s" }}>
+                  {l}
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          ── LEPORELLO ──
+          ══════════════════════════════════════════════════════════ */}
+      <section id="lijnen" className="hidden md:block" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
+
+        {/* Trigger */}
+        <motion.div
+          onClick={() => setIsUnfolded(u => !u)}
+          whileHover={{ background: C.surfaceAlt }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "clamp(20px,4vw,32px) clamp(16px,5vw,60px)", cursor: "none",
+            borderBottom: `1px solid ${C.border}`, transition: TT }}>
+          <div>
+            <div style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase",
+              color: C.inkMuted, marginBottom: 8, transition: "color 0.4s" }}>
+              {isUnfolded ? "Klik een paneel om te draaien" : "Klik om de studie te openen"}
+            </div>
+            <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
+              fontSize: "clamp(20px,3vw,38px)", letterSpacing: "-0.01em",
+              color: C.ink, transition: "color 0.4s" }}>
+              {isUnfolded ? "Sluit Leporello" : "Bekijk de Lijnen"}
+            </div>
+          </div>
+          <motion.div
+            animate={{ rotate: isUnfolded ? 45 : 0, borderColor: isUnfolded ? C.red : C.border }}
+            transition={{ duration: 0.4 }}
+            style={{ width: 44, height: 44, border: `1px solid ${C.border}`, display: "flex",
+              alignItems: "center", justifyContent: "center", fontSize: 20,
+              color: isUnfolded ? C.red : C.inkMuted, flexShrink: 0 }}>
+            +
+          </motion.div>
+        </motion.div>
+
+        {/* Mobile fallback */}
+        <div className="mod-leporello-mobile">
+          {panels.map(panel => (
+            <div key={panel.id} style={{ position: "relative", overflow: "hidden",
+              aspectRatio: "2/3", background: C.surface, border: `0.5px solid ${C.border}` }}>
+              <img src={panel.imagePath} alt={panel.label}
+                style={{ width: "100%", height: "100%", objectFit: "cover",
+                  filter: "grayscale(100%) contrast(1.2)" }} />
+              {panel.label && (
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0,
+                  background: "rgba(0,0,0,0.65)", padding: "4px 6px" }}>
+                  <p style={{ fontSize: 9, textTransform: "uppercase",
+                    letterSpacing: "0.08em", color: "rgba(240,238,255,0.75)" }}>
+                    {panel.label}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop 3D */}
+        <div className="mod-leporello-3d">
+          <div style={{ perspective: "3200px", overflow: "hidden" }}>
+            <motion.div
+              animate={{ height: isUnfolded ? 660 : 300 }}
+              transition={{ duration: 0.8, ease: EASE }}
+              style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {panels.map((panel, i) => (
+                <PanelCard key={panel.id} panel={panel} index={i} isUnfolded={isUnfolded} C={C} />
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Hint */}
+        <AnimatePresence>
+          {isUnfolded && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.6, delay: 1.2, ease: EASE }}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+                padding: "20px 0 28px", borderTop: `1px solid ${C.border}`, transition: TT }}>
+              <span style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase",
+                color: C.inkMuted, transition: "color 0.4s" }}>
+                Klik op een paneel om het te draaien
+              </span>
+              <div style={{ display: "flex", gap: 4 }}>
+                {[0, 1, 2].map(i => (
+                  <motion.span key={i}
+                    animate={{ opacity: [0.15, 0.6, 0.15] }}
+                    transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.25 }}
+                    style={{ width: 3, height: 3, borderRadius: "50%", background: C.red, display: "inline-block" }} />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          ── GALLERY ──
+          ══════════════════════════════════════════════════════════ */}
+      <section id="archief">
+        <div style={{ padding: "clamp(28px,4vw,56px) clamp(16px,5vw,60px) clamp(14px,2vw,28px)",
+          borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "baseline",
+          justifyContent: "space-between", transition: TT }}>
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ width: 24, height: 1, background: C.red, opacity: 0.6, display: "inline-block" }} />
+            <span style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase",
+              color: C.inkMuted, transition: "color 0.4s" }}>
+              Fotografisch Archief
+            </span>
+          </motion.div>
+          <span style={{ fontSize: 9, letterSpacing: "0.16em", color: C.inkMuted, transition: "color 0.4s" }}>
+            10 Fragmenten
+          </span>
+        </div>
+        <div className="mod-gallery-grid">
+          {GALLERY.map((src, i) => (
+            <GalleryItem key={i} src={src} index={i} onClick={() => setLightboxIndex(i)} C={C} />
           ))}
         </div>
       </section>
 
-      {/* Lightbox Modal met Navigatie */}
-      {selectedImage && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 md:p-8 lightbox-enter cursor-none"
-          onClick={() => setSelectedImage(null)}
-          onMouseEnter={() => setIsHoveringLink(true)}
-          onMouseLeave={() => setIsHoveringLink(false)}
-        >
-          <div className="relative w-full h-full flex items-center justify-center">
-            
-            {/* Vorige Pijl */}
-            <button 
-              onClick={prevImage}
-              className="absolute left-4 md:left-10 z-[110] text-white/30 hover:text-white transition-colors text-4xl p-4"
-            >
+      {/* ══════════════════════════════════════════════════════════
+          ── CLOSING ──
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ padding: "clamp(60px,10vw,120px) clamp(20px,5vw,60px)",
+        borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column",
+        alignItems: "center", textAlign: "center", transition: TT }}>
+        <RevealText>
+          <div style={{ fontSize: 9, letterSpacing: "0.36em", textTransform: "uppercase",
+            color: C.inkMuted, marginBottom: 40, transition: "color 0.4s" }}>
+            Jarne Waterschoot × FOMU × 2025
+          </div>
+        </RevealText>
+        <RevealText delay={0.1}>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
+            fontSize: "clamp(32px,5.5vw,80px)", letterSpacing: "-0.02em", lineHeight: 0.92,
+            color: C.ink, marginBottom: 8, transition: "color 0.4s" }}>
+            Shadow is the
+          </div>
+        </RevealText>
+        <RevealText delay={0.2}>
+          <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700,
+            fontSize: "clamp(32px,5.5vw,80px)", letterSpacing: "-0.02em", lineHeight: 0.92,
+            WebkitTextStroke: `clamp(0.5px, 0.2vw, 2px) ${C.red}`, color: "transparent" }}>
+            architect of light
+          </div>
+        </RevealText>
+        <motion.div
+          initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }}
+          transition={{ duration: 1.2, delay: 0.4, ease: EASE }}
+          style={{ width: 1, height: 80,
+            background: `linear-gradient(to bottom, ${C.red}90, transparent)`,
+            marginTop: 56, transformOrigin: "top", transition: "background 0.4s" }} />
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          ── LIGHTBOX ──
+          ══════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {lightboxIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => setLightboxIndex(null)}
+            style={{ position: "fixed", inset: 0, zIndex: 9000,
+              background: C.isLight ? "rgba(244,242,250,0.97)" : "rgba(8,8,12,0.97)",
+              backdropFilter: "blur(12px)", display: "flex", alignItems: "center",
+              justifyContent: "center", padding: 48, cursor: "none" }}>
+
+            <button
+              onClick={e => { e.stopPropagation(); setLightboxIndex(i => (i! - 1 + GALLERY.length) % GALLERY.length) }}
+              style={{ position: "absolute", left: 32, background: "none", border: "none",
+                color: C.inkMuted, fontSize: 28, cursor: "none", padding: 16, transition: "color 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = C.red)}
+              onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}>
               ←
             </button>
 
-            <img 
-              src={selectedImage} 
-              className="max-w-full max-h-full object-contain shadow-2xl"
-              alt="Volledige weergave"
+            <motion.img
+              key={lightboxIndex}
+              initial={{ opacity: 0, scale: 0.94, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.4, ease: EASE }}
+              src={GALLERY[lightboxIndex]}
+              alt={`Fragment ${lightboxIndex + 1}`}
+              onClick={e => e.stopPropagation()}
+              style={{ maxHeight: "76vh", maxWidth: "100%", objectFit: "contain",
+                boxShadow: C.isLight
+                  ? "0 20px 80px rgba(0,0,0,0.15)"
+                  : `0 40px 120px rgba(0,0,0,0.9), 0 0 60px ${C.red}18`,
+                border: `1px solid ${C.border}` }}
             />
 
-            {/* Volgende Pijl */}
-            <button 
-              onClick={nextImage}
-              className="absolute right-4 md:right-10 z-[110] text-white/30 hover:text-white transition-colors text-4xl p-4"
-            >
+            <button
+              onClick={e => { e.stopPropagation(); setLightboxIndex(i => (i! + 1) % GALLERY.length) }}
+              style={{ position: "absolute", right: 32, background: "none", border: "none",
+                color: C.inkMuted, fontSize: 28, cursor: "none", padding: 16, transition: "color 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = C.red)}
+              onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}>
               →
             </button>
 
-            <button 
-              className="absolute top-4 right-4 text-white uppercase text-[10px] tracking-[0.4em] opacity-50 hover:opacity-100 transition-opacity"
-              onClick={() => setSelectedImage(null)}
-            >
-              Sluiten [X]
-            </button>
-          </div>
-        </div>
-      )}
-
-{/* Footer */}
-      <footer className="h-[40vh] flex flex-col items-center justify-center space-y-6 group cursor-default">
-        {/* De streep: van wit/0 naar wit/20 (default) en naar wit/60 bij hover */}
-        <div className="w-[1px] h-20 bg-gradient-to-b from-white/0 to-white/20 group-hover:to-white/60 transition-all duration-1000"></div>
-        
-        {/* De tekst: van opacity-30 naar opacity-100 bij hover */}
-        <p className="text-[9px] tracking-[1.5em] uppercase opacity-30 group-hover:opacity-100 transition-opacity duration-1000 pl-[1.5em] text-center">
-          Shadow is the architect of light
-        </p>
-      </footer>
-
+            <div style={{ position: "absolute", top: 28, right: 36, display: "flex", alignItems: "center", gap: 24 }}>
+              <span style={{ fontSize: 9, letterSpacing: "0.2em", color: C.inkMuted, textTransform: "uppercase" }}>
+                {String(lightboxIndex + 1).padStart(2, "0")} / {String(GALLERY.length).padStart(2, "0")}
+              </span>
+              <button
+                onClick={() => setLightboxIndex(null)}
+                style={{ background: "none", border: `1px solid ${C.border}`, color: C.inkMuted,
+                  fontSize: 9, letterSpacing: "0.24em", textTransform: "uppercase",
+                  padding: "8px 16px", cursor: "none", transition: "all 0.25s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.red; e.currentTarget.style.color = C.red }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.inkMuted }}>
+                Sluiten [ESC]
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  );
+  )
 }

@@ -8,7 +8,7 @@ import Script                  from "next/script"
 import GoogleAnalyticsTracker  from "@/components/GoogleAnalyticsTracker"
 import { StyleProvider }       from "@/components/useStyle"
 import IdleScreen from "@/components/IdleScreen"
-
+import SurveyButton from "@/components/SurveyButton"
 import "./globals.css"
 
 export const metadata = {
@@ -30,12 +30,21 @@ export default function RootLayout({
           }
         `}</style>
       </head>
-      <body className="min-h-screen flex flex-col bg-white text-black dark:bg-neutral-950 dark:text-white transition-colors duration-500">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col">
 
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"
         />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
+          `}
+        </Script>
+        
         <GoogleAnalyticsTracker />
 
         <StyleProvider>
@@ -43,13 +52,14 @@ export default function RootLayout({
           <GlobalCursor />
           <IdleScreen />
 
-          <GlobalNavbar />
+          <GlobalNavbar  />
 
           <main className="flex-1 mx-auto w-full">
             {children}
           </main>
 
           <Footer />
+          <SurveyButton />
         </StyleProvider>
 
         <AppToaster />

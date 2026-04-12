@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   motion, useScroll, useTransform, useInView,
-  AnimatePresence, useMotionValue, useSpring
+  AnimatePresence,
 } from 'framer-motion';
 
 type Tokens = {
@@ -24,7 +24,7 @@ const DARK: Tokens = {
 
 const LIGHT: Tokens = {
   bg: "#FAFAF8", surface: "#F0EDE8", surfaceAlt: "#E8E4DC",
-  ink: "#0A0908", inkSub: "#3A3530", inkMuted: "#9A9490",
+  ink: "#0A0908", inkSub: "#3A3530", inkMuted: "#5A5650",
   orange: "#A07840", orangeDim: "rgba(160,120,64,0.08)",
   border: "#DDD8D0", borderStrong: "#C4BEB4",
   isLight: true,
@@ -52,9 +52,9 @@ type Props  = { heroTop?: string; heroBottom?: string; tribute?: string; introTe
 const DEFAULT_PANELS: Panel[] = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
   imagePath: `/img/Paneel_${i + 1}.jpg`,
-  label: ["Chaotische lijn","Organische lijn","Geordende lijn","Abstracte lijn",
-          "Rechte lijn","Ritmische lijn","Doorlopende lijn","Gebogen lijn",
-          "Onregelmatige lijn","Onderbroken lijn","Scherpe lijn","Zachte lijn"][i],
+  label: ["Chaotische lijn","Organische lijn","Geordende lijn","","Abstracte lijn",
+          "Rechte lijn","Ritmische lijn","","Doorlopende lijn","Gebogen lijn",
+          "Onregelmatige lijn","Onderbroken lijn",][i],
   sub: `Paneel ${String(i + 1).padStart(2, "0")}`,
 }));
 
@@ -69,24 +69,6 @@ const HERO_SLIDES = [
 ];
 
 
-function Cursor({ orange }: { orange: string }) {
-  const cx = useMotionValue(-100), cy = useMotionValue(-100);
-  const sx = useSpring(cx, { stiffness: 500, damping: 28 });
-  const sy = useSpring(cy, { stiffness: 500, damping: 28 });
-  const tx = useSpring(cx, { stiffness: 100, damping: 18 });
-  const ty = useSpring(cy, { stiffness: 100, damping: 18 });
-  useEffect(() => {
-    const m = (e: MouseEvent) => { cx.set(e.clientX); cy.set(e.clientY); };
-    window.addEventListener("mousemove", m);
-    return () => window.removeEventListener("mousemove", m);
-  }, [cx, cy]);
-  return (
-    <>
-      <motion.div style={{ x: sx, y: sy, position: "fixed", top: 0, left: 0, zIndex: 9999, pointerEvents: "none", width: 6, height: 6, borderRadius: "50%", background: orange, translateX: "-50%", translateY: "-50%" }} />
-      <motion.div style={{ x: tx, y: ty, position: "fixed", top: 0, left: 0, zIndex: 9998, pointerEvents: "none", width: 36, height: 36, borderRadius: "50%", border: `1px solid ${orange}55`, translateX: "-50%", translateY: "-50%" }} />
-    </>
-  );
-}
 
 function Grain({ isLight }: { isLight: boolean }) {
   return (
@@ -128,12 +110,13 @@ function SlideCounter({ current, total, orange, inkMuted }: { current: number; t
 }
 
 // ── PANEL CARD ────────────────────────────────────────────────────────────────
-function PanelCard({ panel, index, isUnfolded, C }: { panel: Panel; index: number; isUnfolded: boolean; C: Tokens }) {
+function PanelCard({ panel, index, isUnfolded, onOpen, C }: { panel: Panel; index: number; isUnfolded: boolean; onOpen: () => void; C: Tokens }) {
   const [flipped, setFlipped] = useState(false);
   const col = index % 6, row = Math.floor(index / 6);
   const T = "0.45s ease";
   return (
-    <div onClick={() => isUnfolded && setFlipped(f => !f)}
+    <div
+      onClick={() => isUnfolded ? setFlipped(f => !f) : onOpen()}
       style={{
         position: "absolute", width: 160, height: 250,
         transform: isUnfolded
@@ -142,7 +125,7 @@ function PanelCard({ panel, index, isUnfolded, C }: { panel: Panel; index: numbe
         transition: "transform 1.4s cubic-bezier(0.2,0.85,0.2,1)",
         transformStyle: "preserve-3d",
         zIndex: isUnfolded ? 10 : 30 - index,
-        cursor: isUnfolded ? "none" : "default",
+        cursor: "pointer",
       }}>
       <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", background: C.surface, border: `1px solid ${C.border}`, overflow: "hidden", transition: `background ${T}, border-color ${T}` }}>
         <img src={panel.imagePath} alt={panel.label}
@@ -153,12 +136,12 @@ function PanelCard({ panel, index, isUnfolded, C }: { panel: Panel; index: numbe
       </div>
       <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", transform: "rotateY(180deg)", background: "#F0EDE8", padding: "20px 16px", display: "flex", flexDirection: "column", justifyContent: "space-between", border: "1px solid #C4BEB4" }}>
         <div>
-          <div style={{ fontSize: 7, letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(8,8,7,0.4)", marginBottom: 8 }}>Tegenstelling</div>
+          <div style={{ fontSize: 9, letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(8,8,7,0.4)", marginBottom: 8 }}>Tegenstelling</div>
           <div style={{ fontSize: 12, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", color: "#080807", lineHeight: 1.2 }}>{panel.label.toUpperCase()}</div>
         </div>
         <div>
           <div style={{ height: 1, background: C.orange, opacity: 0.4, marginBottom: 10 }} />
-          <div style={{ fontSize: 7, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(8,8,7,0.45)", lineHeight: 1.8 }}>Studie naar Lijnen<br />FOMU × Binet 2025</div>
+          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(8,8,7,0.45)", lineHeight: 1.8 }}>Studie naar Lijnen<br />FOMU × Binet 2025</div>
         </div>
       </div>
     </div>
@@ -202,6 +185,7 @@ export default function HeleneBinetPage({
   heroTop = "Shadow &",
   heroBottom = "Light",
   tribute = "Een tribuut aan Hélène Binet",
+  introText = "",
   panels = DEFAULT_PANELS,
 }: Props) {
 
@@ -259,9 +243,21 @@ export default function HeleneBinetPage({
         ::-webkit-scrollbar { width:1px; }
         ::-webkit-scrollbar-thumb { background:${C.orange}60; }
         a { text-decoration:none; color:inherit; }
+
+        /* ── Responsive layout ── */
+        .hb-intro-grid { display:grid; grid-template-columns:1fr; gap:40px; align-items:start; padding:clamp(40px,7vw,96px) clamp(16px,5vw,60px); }
+        @media (min-width:768px) { .hb-intro-grid { grid-template-columns:1fr 1fr; gap:80px; } }
+
+        .hb-gallery-grid { display:grid; grid-template-columns:repeat(2,1fr); }
+        @media (min-width:640px)  { .hb-gallery-grid { grid-template-columns:repeat(3,1fr); } }
+        @media (min-width:1024px) { .hb-gallery-grid { grid-template-columns:repeat(5,1fr); } }
+
+        .hb-leporello-mobile { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:20px; }
+        .hb-leporello-3d { display:none; }
+        @media (min-width:768px) { .hb-leporello-mobile { display:none; } .hb-leporello-3d { display:block; } }
       `}</style>
 
-      <Cursor orange={C.orange} />
+
 
 
       {/* ══════════════════════════════════════════════════════════
@@ -388,9 +384,9 @@ export default function HeleneBinetPage({
           <div style={{
             position: "absolute",
             bottom: "22%",
-            left: "60px",
+            left: "clamp(20px, 5vw, 60px)",
             zIndex: 10,
-            maxWidth: "75vw",
+            maxWidth: "85vw",
           }}>
             {/* Slide caption */}
             <AnimatePresence mode="wait">
@@ -445,7 +441,7 @@ export default function HeleneBinetPage({
                   fontSize: "clamp(64px, 10vw, 140px)",
                   lineHeight: 0.86,
                   letterSpacing: "0.015em",
-                  WebkitTextStroke: `1.5px ${C.orange}`,
+                  WebkitTextStroke: `clamp(0.4px, 0.15vw, 1.5px) ${C.orange}`,
                   color: "transparent",
                   margin: 0,
                   textShadow: "none",
@@ -495,7 +491,7 @@ export default function HeleneBinetPage({
       </motion.section>
 
       {/* ── INTRO ── */}
-      <section style={{ padding: "96px 60px", borderBottom: `1px solid ${C.border}`, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start", transition: TT }}>
+      <section className="hb-intro-grid" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
         <div>
           <RevealText>
             <div style={{ fontSize: 9, letterSpacing: "0.32em", textTransform: "uppercase", color: C.orange, marginBottom: 20, display: "flex", alignItems: "center", gap: 12, transition: "color 0.45s ease" }}>
@@ -506,17 +502,25 @@ export default function HeleneBinetPage({
           <RevealText delay={0.1}>
             <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(32px, 4.5vw, 62px)", letterSpacing: "0.04em", lineHeight: 0.95, color: C.ink, marginBottom: 28, transition: "color 0.45s ease" }}>
               Mijn blik op<br />architecturaal<br />
-              <span style={{ WebkitTextStroke: `1.5px ${C.orange}`, color: "transparent" }}>licht &amp; schaduw</span>
+              <span style={{ WebkitTextStroke: `clamp(0.4px, 0.15vw, 1.5px) ${C.orange}`, color: "transparent" }}>licht &amp; schaduw</span>
             </h2>
           </RevealText>
         </div>
         <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.9, delay: 0.2, ease: EASE }}>
-          <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, marginBottom: 28, transition: "color 0.45s ease" }}>
-            In opdracht van het <span style={{ color: C.ink }}>FOMU te Antwerpen</span> Voor een opdracht van AP Hogeschool analyseerde ik het fotografisch werk van Hélène Binet voor FOMU. Vanuit haar visuele stijl onderzocht ik hoe lijnen een belangrijke rol spelen in haar fotografie en vertaalde dit naar vijf visuele tegenstellingen rond lijnen. Deze werden uitgewerkt in een leporello en one-pager die als tribuut tijdens een tentoonstelling zou kunnen worden uitgedeeld.
-          </p>
-          <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, transition: "color 0.45s ease" }}>
-            Binet's analoge, contrastrijke manier van kijken diende als inspiratie — maar de beelden, de keuzes en de compositie zijn volledig van <span style={{ color: C.inkSub, fontStyle: "italic" }}>mijn hand</span>.
-          </p>
+          {introText ? (
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, transition: "color 0.45s ease" }}>
+              {introText}
+            </p>
+          ) : (
+            <>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, marginBottom: 28, transition: "color 0.45s ease" }}>
+                In opdracht van het <span style={{ color: C.ink }}>FOMU te Antwerpen</span> analyseerde ik het fotografisch werk van Hélène Binet. Vanuit haar visuele stijl onderzocht ik hoe lijnen een belangrijke rol spelen in haar fotografie en vertaalde dit naar vijf visuele tegenstellingen rond lijnen. Deze werden uitgewerkt in een leporello die als tribuut tijdens een tentoonstelling zou kunnen worden uitgedeeld.
+              </p>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, transition: "color 0.45s ease" }}>
+                Binet's analoge, contrastrijke manier van kijken diende als inspiratie. De beelden, de keuzes en de compositie zijn volledig van <span style={{ color: C.inkSub, fontStyle: "italic" }}>mijn hand</span>.
+              </p>
+            </>
+          )}
           <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.border, transition: "background 0.45s ease" }}>
             {[["05", "Tegenstellingen"], ["10", "Foto's"]].map(([n, l], i) => (
               <div key={i} style={{ background: C.bg, padding: "24px 20px", transition: TT }}>
@@ -529,9 +533,9 @@ export default function HeleneBinetPage({
       </section>
 
       {/* ── LEPORELLO ── */}
-      <section id="lijnen" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
+      <section id="lijnen" className="hidden md:block" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
         <motion.div onClick={() => setIsUnfolded(u => !u)} whileHover={{ background: C.surfaceAlt }}
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "32px 60px", cursor: "none", borderBottom: `1px solid ${C.border}`, transition: TT }}>
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "clamp(20px,4vw,32px) clamp(16px,5vw,60px)", cursor: "none", borderBottom: `1px solid ${C.border}`, transition: TT }}>
           <div>
             <div style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 8, transition: "color 0.45s ease" }}>
               {isUnfolded ? "Klik een paneel om te draaien" : "Klik om de studie te openen"}
@@ -544,18 +548,38 @@ export default function HeleneBinetPage({
             style={{ width: 44, height: 44, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, color: isUnfolded ? C.orange : C.inkMuted, flexShrink: 0 }}>+</motion.div>
         </motion.div>
 
-        <div style={{ perspective: "3200px", overflow: "hidden" }}>
-          <motion.div animate={{ height: isUnfolded ? 660 : 300 }} transition={{ duration: 0.8, ease: EASE }}
-            style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {panels.map((panel, i) => <PanelCard key={panel.id} panel={panel} index={i} isUnfolded={isUnfolded} C={C} />)}
-          </motion.div>
+        {/* Mobile fallback: simple grid */}
+        <div className="hb-leporello-mobile">
+          {panels.map((panel) => (
+            <div key={panel.id} style={{ position: "relative", overflow: "hidden", aspectRatio: "2/3", background: C.surface, border: `0.5px solid ${C.border}` }}>
+              <img src={panel.imagePath} alt={panel.label} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%) contrast(1.15)" }} />
+              {panel.label && (
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.6)", padding: "4px 6px" }}>
+                  <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(240,237,232,0.7)" }}>{panel.label}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: 3D leporello */}
+        <div className="hb-leporello-3d">
+          <div style={{ perspective: "3200px", overflow: "hidden" }}>
+            <motion.div
+              animate={{ height: isUnfolded ? 660 : 300 }}
+              transition={{ duration: 0.8, ease: EASE }}
+              style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {panels.map((panel, i) => (
+                <PanelCard key={panel.id} panel={panel} index={i} isUnfolded={isUnfolded} onOpen={() => setIsUnfolded(true)} C={C} />
+              ))}
+            </motion.div>
+          </div>
         </div>
 
         <AnimatePresence>
           {isUnfolded && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.6, delay: 1.2, ease: EASE }}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "20px 0 28px", borderTop: `1px solid ${C.border}`, transition: TT }}>
-              <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} style={{ fontSize: 16, opacity: 0.4 }}>👆</motion.span>
               <span style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, transition: "color 0.45s ease" }}>Klik op een paneel om het te draaien</span>
               <div style={{ display: "flex", gap: 4 }}>
                 {[0, 1, 2].map(i => (
@@ -570,23 +594,23 @@ export default function HeleneBinetPage({
 
       {/* ── GALLERY ── */}
       <section>
-        <div style={{ padding: "56px 60px 28px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "baseline", justifyContent: "space-between", transition: TT }}>
+        <div style={{ padding: "clamp(28px,4vw,56px) clamp(16px,5vw,60px) clamp(14px,2vw,28px)", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "baseline", justifyContent: "space-between", transition: TT }}>
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{ width: 24, height: 1, background: C.orange, opacity: 0.6, display: "inline-block", transition: "background 0.45s ease" }} />
             <span style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, transition: "color 0.45s ease" }}>Fotografisch Archief</span>
           </motion.div>
           <span style={{ fontSize: 9, letterSpacing: "0.16em", color: C.inkMuted, transition: "color 0.45s ease" }}>10 Fragmenten</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)" }}>
+        <div className="hb-gallery-grid">
           {GALLERY.map((src, i) => <GalleryItem key={i} src={src} index={i} onClick={() => openLightbox(i)} C={C} />)}
         </div>
       </section>
 
       {/* ── CLOSING ── */}
-      <section style={{ padding: "120px 60px", borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", transition: TT }}>
+      <section style={{ padding: "clamp(60px,10vw,120px) clamp(20px,5vw,60px)", borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", transition: TT }}>
         <RevealText><div style={{ fontSize: 9, letterSpacing: "0.36em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 40, transition: "color 0.45s ease" }}>Jarne Waterschoot × FOMU × 2025</div></RevealText>
         <RevealText delay={0.1}><div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, color: C.ink, marginBottom: 8, transition: "color 0.45s ease" }}>Shadow is the</div></RevealText>
-        <RevealText delay={0.2}><div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, WebkitTextStroke: `2px ${C.orange}`, color: "transparent" }}>architect of light</div></RevealText>
+        <RevealText delay={0.2}><div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, WebkitTextStroke: `clamp(0.5px, 0.2vw, 2px) ${C.orange}`, color: "transparent" }}>architect of light</div></RevealText>
         <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 1.2, delay: 0.4, ease: EASE }}
           style={{ width: 1, height: 80, background: `linear-gradient(to bottom, ${C.orange}90, transparent)`, marginTop: 56, transformOrigin: "top", transition: "background 0.45s ease" }} />
       </section>

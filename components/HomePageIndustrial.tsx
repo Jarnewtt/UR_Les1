@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, useMotionValue, useSpring, useScroll, useTransform, useReducedMotion } from "framer-motion"
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion"
 import Link from "next/link"
 
 // ── DESIGN TOKENS ─────────────────────────────────────────────────────────────
@@ -10,17 +10,17 @@ type Theme = {
   orange: string; border: string; isLight: boolean
 }
 const DARK: Theme  = { bg:"#080807", surface:"#111110", ink:"#F0EDE8", inkSub:"#C8C4BE", inkMuted:"#888480", orange:"#FF5C1A", border:"#262420", isLight:false }
-const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", inkMuted:"#6A6460", orange:"#E84000", border:"#DDD8D0", isLight:true  }
+const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", inkMuted:"#4E4A46", orange:"#E84000", border:"#DDD8D0", isLight:true  }
 const E: [number,number,number,number] = [0.16, 1, 0.3, 1]
 
 interface Project { id:string; name:string; sub:string; year:string; href:string }
 const PROJECTS: Project[] = [
-  { id:"001", name:"Hélène Binet",    sub:"Photography",          year:"2025", href:"/Architectuur" },
-  { id:"002", name:"CineCity",        sub:"Campaign — Branding",  year:"2026", href:"/CineCity"     },
-  { id:"003", name:"C for chocolate", sub:"Packaging — Branding", year:"2026", href:"/Chocolate"    },
+  { id:"001", name:"Hélène Binet",    sub:"Fotografie",           year:"2025", href:"/Architectuur" },
+  { id:"002", name:"CineCity",        sub:"Campagne — Branding",  year:"2026", href:"/CineCity"     },
+  { id:"003", name:"C for chocolate", sub:"Verpakking — Branding", year:"2026", href:"/Chocolate"    },
 ]
-const SKILLS  = ["Branding","Packaging","Digital Design","Photography","Art Direction","UI / UX"]
-const MARQUEE = ["Photography","Branding","Visual Identity","Art Direction","UI/UX","Packaging","Motion","Digital Design"]
+const SKILLS  = ["Branding","Verpakking","Digitaal Design","Fotografie","Vormgeving","UI / UX"]
+const MARQUEE = ["Fotografie","Branding","Visuele Identiteit","Vormgeving","UI/UX","Verpakking","Motion","Digitaal Design"]
 const HERO_IMAGES = [
   { src:"/img/Gallerij_3.jpg",                       alt:"Design project 1" },
   { src:"/img/Mockup_affichereeks.jpg",              alt:"Design project 2" },
@@ -86,19 +86,6 @@ function ParallaxHero({ C }: { C: Theme }) {
 }
 
 // ── CURSOR ────────────────────────────────────────────────────────────────────
-function Cursor({ orange }: { orange:string }) {
-  const cx = useMotionValue(-100), cy = useMotionValue(-100)
-  const sx = useSpring(cx,{stiffness:500,damping:28}), sy = useSpring(cy,{stiffness:500,damping:28})
-  const tx = useSpring(cx,{stiffness:100,damping:18}), ty = useSpring(cy,{stiffness:100,damping:18})
-  useEffect(() => {
-    const m = (e:MouseEvent) => { cx.set(e.clientX); cy.set(e.clientY) }
-    window.addEventListener("mousemove",m); return () => window.removeEventListener("mousemove",m)
-  },[cx,cy])
-  return (<>
-    <motion.div style={{ x:sx,y:sy,position:"fixed",top:0,left:0,zIndex:9999,pointerEvents:"none",width:6,height:6,borderRadius:"50%",background:orange,translateX:"-50%",translateY:"-50%" }}/>
-    <motion.div style={{ x:tx,y:ty,position:"fixed",top:0,left:0,zIndex:9998,pointerEvents:"none",width:32,height:32,borderRadius:"50%",border:`1px solid ${orange}`,opacity:0.5,translateX:"-50%",translateY:"-50%" }}/>
-  </>)
-}
 
 // ── TICKER ────────────────────────────────────────────────────────────────────
 function Ticker({ C }: { C:Theme }) {
@@ -304,7 +291,7 @@ export default function HomePageIndustrial() {
         @media (min-width:768px) { .hero-fade { height:25% } }
       `}</style>
 
-      <Cursor orange={C.orange} />
+
 
       <svg style={{ position:"fixed",inset:0,zIndex:9989,opacity:0.028,pointerEvents:"none",width:"100%",height:"100%" }}>
         <filter id="gn">
@@ -331,7 +318,7 @@ export default function HomePageIndustrial() {
             <div className="name-last" style={{ display:"flex" }}>
               {loaded && last.map((ch,i) => (
                 <motion.span key={i} initial={{ y:"105%" }} animate={{ y:0 }} transition={{ duration:0.82,delay:0.5+i*0.03,ease:E }}
-                  style={{ display:"inline-block", fontFamily:"'Bebas Neue',sans-serif", lineHeight:0.84, letterSpacing:"0.025em", color:"transparent", WebkitTextStroke:`1.5px ${C.ink}`, transition:"none" }}>
+                  style={{ display:"inline-block", fontFamily:"'Bebas Neue',sans-serif", lineHeight:0.84, letterSpacing:"0.025em", color:"transparent", WebkitTextStroke:`clamp(0.4px, 0.15vw, 1.5px) ${C.ink}`, transition:"none" }}>
                   {ch}
                 </motion.span>
               ))}
@@ -343,14 +330,14 @@ export default function HomePageIndustrial() {
             style={{ borderBottom:`1px solid ${C.border}` }}>
             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
               <div style={{ width:20,height:2,background:C.orange,flexShrink:0 }}/>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.22em", textTransform:"uppercase", color:C.inkSub }}>Graphic Designer</span>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.22em", textTransform:"uppercase", color:C.inkSub }}>Grafisch Ontwerper</span>
             </div>
             <div className="role-divider" style={{ width:1,height:16,background:C.border }}/>
             <span className="role-divider" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:"0.2em", textTransform:"uppercase", color:C.inkMuted }}>Antwerpen, BE</span>
             <div className="role-divider" style={{ width:1,height:16,background:C.border }}/>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <span className="blink" style={{ width:6,height:6,borderRadius:"50%",background:C.orange,display:"inline-block",flexShrink:0,boxShadow:`0 0 8px ${C.orange}` }}/>
-              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.22em", textTransform:"uppercase", color:C.orange }}>Available</span>
+              <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.22em", textTransform:"uppercase", color:C.orange }}>Beschikbaar</span>
             </div>
             <span className="role-location-mobile" style={{ fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.18em", textTransform:"uppercase", color:C.inkMuted }}>
               Antwerpen, BE
@@ -359,7 +346,7 @@ export default function HomePageIndustrial() {
 
           <motion.div className="tagline-cta" initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:2.0,duration:0.8 }}>
             <p className="tagline-text" style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontStyle:"italic", color:C.inkSub }}>
-              Tastbare visuele verhalen — strategie en esthetiek voor merken die durven opvallen.
+              Tastbare visuele verhalen. Strategie en esthetiek voor merken die durven opvallen.
             </p>
             <motion.a href="#werk"
               whileHover={{ boxShadow:`0 0 28px ${C.orange}99, 0 0 8px ${C.orange}55`, scale:1.03 }}
@@ -420,12 +407,12 @@ export default function HomePageIndustrial() {
           </div>
           <h2 className="about-heading" style={{ fontFamily:"'Bebas Neue',sans-serif", letterSpacing:"0.03em", color:C.ink }}>
             Design dat werkt.<br/>
-            <span style={{ WebkitTextStroke:`2px ${C.orange}`, color:"transparent" }}>Design dat blijft.</span>
+            <span style={{ WebkitTextStroke:`clamp(0.5px, 0.2vw, 2px) ${C.orange}`, color:"transparent" }}>Design dat blijft.</span>
           </h2>
           <p className="about-body" style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, color:C.inkSub }}>
             Gespecialiseerd in het bouwen van visuele systemen die verder gaan dan het esthetische. Van merkidentiteit tot verpakking en digitale campagnes.
           </p>
-          <motion.a href="mailto:jarnewaterschoot@hotmail.com"
+          <motion.a href="/contact"
             whileHover={{ boxShadow:`0 0 28px ${C.orange}99, 0 0 8px ${C.orange}55`, scale:1.03 }}
             whileTap={{ scale:0.97 }}
             style={{ display:"inline-flex", alignItems:"center", gap:12, border:`1.5px solid ${C.orange}`, backgroundColor:C.orange, color:"#fff", fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.26em", textTransform:"uppercase", padding:"14px 28px", transition:"box-shadow 0.28s, transform 0.28s" }}>

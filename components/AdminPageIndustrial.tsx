@@ -22,11 +22,10 @@ const defaultPanels: Panel[] = Array.from({ length: 12 }, (_, i) => ({
   sub: `Paneel ${String(i + 1).padStart(2,"0")}`,
 }));
 
-const SURVEY_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform";
 
 export default function AdminPage() {
-  const [titleTop, setTitleTop]       = useState("Shadow &");
-  const [titleBottom, setTitleBottom] = useState("Light");
+  const [titleTop, setTitleTop]       = useState("Schaduw &");
+  const [titleBottom, setTitleBottom] = useState("Licht");
   const [tribute, setTribute]         = useState("Een tribuut aan Hélène Binet");
   const [introText, setIntroText]     = useState("");
   const [panels, setPanels]           = useState<Panel[]>(defaultPanels);
@@ -142,7 +141,7 @@ export default function AdminPage() {
           top: 0,
           left: 0,
           transform: "translate(0px, 200px)",
-          zIndex: 9999,
+          zIndex: 8000,
           display: "flex",
           alignItems: "flex-start",
           willChange: "transform",
@@ -190,7 +189,7 @@ export default function AdminPage() {
 
         {/* Drawer */}
         <div style={{
-          width: panelOpen ? "340px" : "0px",
+          width: panelOpen ? "min(340px, calc(100vw - 52px))" : "0px",
           maxHeight: "calc(100vh - 80px)",
           overflowY: panelOpen ? "auto" : "hidden",
           overflowX: "hidden",
@@ -201,7 +200,7 @@ export default function AdminPage() {
           flexShrink: 0,
         }}>
           {panelOpen && (
-            <div style={{ padding: "0 0 48px", minWidth: "340px" }}>
+            <div style={{ padding: "0 0 48px", minWidth: "min(340px, calc(100vw - 52px))" }}>
 
               {/* Drag handle */}
               <div
@@ -262,31 +261,13 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                {/* Survey button */}
-                <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    gap: "9px", width: "100%", padding: "13px 0", marginBottom: "22px",
-                    background: "linear-gradient(135deg,#FF6B00,#FFA040)",
-                    color: "#fff", fontWeight: 800, fontSize: "12px",
-                    letterSpacing: "0.08em", textTransform: "uppercase",
-                    borderRadius: "10px", textDecoration: "none",
-                    boxShadow: "0 4px 22px rgba(255,107,0,0.4)", boxSizing: "border-box",
-                  }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white" style={{ flexShrink: 0 }}>
-                    <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0
-                      2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 16h8v1H8v-1zm0-3h8v1H8v-1zm0-3h5v1H8v-1z"/>
-                  </svg>
-                  Vul de Google Enquête in
-                </a>
-
                 <Divider />
                 <SectionTitle icon="🖼" label="Hero Tekst" />
                 <Field label="Titel — Bovenste regel"
-                  hint='Eerste deel van de grote paginatitel, bv. "Shadow &"'
+                  hint='Eerste deel van de grote paginatitel, bv. "Schaduw &"'
                   value={titleTop} onChange={setTitleTop} />
                 <Field label="Titel — Onderste regel"
-                  hint='Tweede deel van de hoofdtitel, bv. "Light"'
+                  hint='Tweede deel van de hoofdtitel, bv. "Licht"'
                   value={titleBottom} onChange={setTitleBottom} />
                 <Field label="Toewijding"
                   hint="Ondertitel die onder de hoofdtitel staat"

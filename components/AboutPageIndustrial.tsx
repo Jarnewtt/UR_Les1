@@ -59,6 +59,7 @@ export default function AboutPageIndustrial() {
   const portraitY     = useTransform(scrollYProgress, [0, 1], ["0%", "20%"])
   const portraitScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1])
 
+
   return (
     // FIX: transition op background verwijderd
     <div ref={containerRef} style={{ background: C.bg, color: C.ink }} className="min-h-screen selection:bg-[#FF5C1A] selection:text-white">
@@ -70,9 +71,8 @@ export default function AboutPageIndustrial() {
             <img
               src="/img/portfolio_about.png"
               alt="Jarne Waterschoot"
-              className="w-full h-full object-cover grayscale contrast-125 brightness-75 transition-all duration-700 hover:grayscale-0"
+              className="w-full h-full object-cover grayscale contrast-125 brightness-75"
             />
-            {/* FIX: gradient gebruikt C.bg direct i.p.v. CSS variabele */}
             <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${C.bg}, transparent)` }} />
             <div className="absolute inset-0" style={{ background: `linear-gradient(to right, ${C.bg}, transparent 40%)` }} />
           </motion.div>
@@ -85,8 +85,8 @@ export default function AboutPageIndustrial() {
             Creatief DNA
           </motion.span>
           <h1 className="text-[15vw] md:text-[10vw] leading-[0.85] font-bebas uppercase mix-blend-difference" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-            The Designer <br />
-            <span style={{ WebkitTextStroke: `1px ${C.inkSub}`, color: "transparent" }}>Behind the work</span>
+            De Ontwerper <br />
+            <span style={{ WebkitTextStroke: `clamp(0.3px, 0.1vw, 1px) ${C.inkSub}`, color: "transparent" }}>Achter het werk</span>
           </h1>
         </div>
       </section>
@@ -153,14 +153,14 @@ export default function AboutPageIndustrial() {
 
       {/* 5. CTA SECTION */}
       <section className="h-[60vh] flex flex-col items-center justify-center text-center border-t px-6" style={{ borderColor: C.border }}>
-        <h2 className="text-4xl md:text-6xl mb-12 font-bebas uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>Iets groots bouwen?</h2>
+        <h2 className="text-4xl md:text-6xl mb-12 font-bebas uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>Gezien worden.<br />Niet vergeten worden.</h2>
         <motion.a
-          href="mailto:jarnewaterschoot@hotmail.com"
+          href="/contact"
           whileHover={{ scale: 1.05, rotate: -1 }}
           className="px-12 py-6 text-sm tracking-[.3em] uppercase font-bold"
           style={{ background: C.orange, color: "#fff" }}
         >
-          Start Project
+          Project Starten
         </motion.a>
       </section>
 

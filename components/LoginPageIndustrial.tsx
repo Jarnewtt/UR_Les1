@@ -11,7 +11,7 @@ type Theme = {
 }
 
 const DARK: Theme  = { bg:"#080807", surface:"#111110", ink:"#F0EDE8", inkSub:"#C8C4BE", inkMuted:"#888480", orange:"#FF5C1A", border:"#262420", isLight:false }
-const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", inkMuted:"#6A6460", orange:"#E84000", border:"#DDD8D0", isLight:true  }
+const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", inkMuted:"#4E4A46", orange:"#E84000", border:"#DDD8D0", isLight:true  }
 
 const E: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
@@ -149,7 +149,7 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  const HERO = "ACCESS".split("")
+  const HERO = "TOEGANG".split("")
 
   const labelStyle: React.CSSProperties = {
     fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.28em",
@@ -256,8 +256,8 @@ export default function LoginPage() {
             <motion.div
               initial={{ y:"100%" }} animate={isLoaded ? { y:0 } : {}}
               transition={{ delay:0.85, duration:0.75, ease:E }}
-              style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, lineHeight:0.9, color:"transparent", WebkitTextStroke:`1px ${C.inkMuted}` }}>
-              PORTAL
+              style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, lineHeight:0.9, color:"transparent", WebkitTextStroke:`clamp(0.3px, 0.1vw, 1px) ${C.inkMuted}` }}>
+              PORTAAL
             </motion.div>
           </div>
 
@@ -274,7 +274,7 @@ export default function LoginPage() {
             style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, marginTop:10 }}>
             <span className="blink" style={{ width:6, height:6, borderRadius:"50%", background:C.orange, display:"inline-block", boxShadow:`0 0 8px ${C.orange}` }}/>
             <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:"0.22em", textTransform:"uppercase", color:C.orange }}>
-              Secure Access
+              Beveiligde Toegang
             </span>
           </motion.div>
         </div>
@@ -285,9 +285,10 @@ export default function LoginPage() {
           transition={{ delay:0.6, duration:0.7, ease:E }}>
 
           <Tabs defaultValue="login" style={{ width:"100%" }}>
-            <TabsList style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:4, background:"none", marginBottom:20, padding:0 }}>
-              <TabsTrigger value="login" className="tab-trigger">Login</TabsTrigger>
-              <TabsTrigger value="join"  className="tab-trigger">Register</TabsTrigger>
+            <TabsList style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:4, background:"none", marginBottom:20, padding:0 }}>
+              <TabsTrigger value="login"  className="tab-trigger">Aanmelden</TabsTrigger>
+              <TabsTrigger value="join"   className="tab-trigger">Registreren</TabsTrigger>
+              <TabsTrigger value="herstel" className="tab-trigger">Herstel</TabsTrigger>
             </TabsList>
 
             <div style={{
@@ -323,7 +324,7 @@ export default function LoginPage() {
                         <motion.span animate={{ rotate:360 }} transition={{ duration:0.9, repeat:Infinity, ease:"linear" }}
                           style={{ display:"inline-block", width:14, height:14, borderRadius:"50%", border:"2px solid #fff", borderTopColor:"transparent" }}/>
                       ) : (
-                        <>Enter Portal <motion.span animate={{ x:[0,5,0] }} transition={{ duration:1.6, repeat:Infinity }}>→</motion.span></>
+                        <>Portaal Betreden <motion.span animate={{ x:[0,5,0] }} transition={{ duration:1.6, repeat:Infinity }}>→</motion.span></>
                       )}
                     </motion.button>
                   </motion.form>
@@ -358,7 +359,45 @@ export default function LoginPage() {
                         <motion.span animate={{ rotate:360 }} transition={{ duration:0.9, repeat:Infinity, ease:"linear" }}
                           style={{ display:"inline-block", width:14, height:14, borderRadius:"50%", border:"2px solid #fff", borderTopColor:"transparent" }}/>
                       ) : (
-                        <>Create Identity <motion.span animate={{ x:[0,5,0] }} transition={{ duration:1.6, repeat:Infinity }}>→</motion.span></>
+                        <>Account Aanmaken <motion.span animate={{ x:[0,5,0] }} transition={{ duration:1.6, repeat:Infinity }}>→</motion.span></>
+                      )}
+                    </motion.button>
+                  </motion.form>
+                </TabsContent>
+
+                {/* HERSTEL */}
+                <TabsContent key="herstel" value="herstel" style={{ outline:"none" }}>
+                  <motion.form key="herstel-form" onSubmit={mockSubmit}
+                    initial={{ opacity:0, x:12 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-12 }}
+                    transition={{ duration:0.35, ease:E }}
+                    style={{ display:"flex", flexDirection:"column", gap:28 }}>
+
+                    <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+                      <div style={{ width:2, flexShrink:0, alignSelf:"stretch", background:`linear-gradient(to bottom, ${C.orange}, transparent)`, marginTop:2 }}/>
+                      <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:13, lineHeight:1.8, color:C.inkMuted }}>
+                        Voer je e-mailadres in om een herstelkoppeling te ontvangen voor een nieuw wachtwoord.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label style={labelStyle}>E-mailadres</label>
+                      <input type="email" className="login-input" placeholder="je@email.be" required />
+                    </div>
+
+                    <motion.button type="submit" disabled={loading}
+                      whileHover={{ backgroundColor:`${C.orange}18`, scale:1.02 }}
+                      whileTap={{ scale:0.97 }}
+                      style={{
+                        marginTop:4, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:14,
+                        border:`1.5px solid ${C.orange}`, backgroundColor:"transparent", color:C.orange,
+                        fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.3em",
+                        textTransform:"uppercase", padding:"16px 32px", cursor:"pointer", transition:"all 0.28s",
+                      }}>
+                      {loading ? (
+                        <motion.span animate={{ rotate:360 }} transition={{ duration:0.9, repeat:Infinity, ease:"linear" }}
+                          style={{ display:"inline-block", width:14, height:14, borderRadius:"50%", border:`2px solid ${C.orange}`, borderTopColor:"transparent" }}/>
+                      ) : (
+                        <>Herstel Aanvragen <motion.span animate={{ x:[0,5,0] }} transition={{ duration:1.6, repeat:Infinity }}>→</motion.span></>
                       )}
                     </motion.button>
                   </motion.form>
@@ -374,9 +413,9 @@ export default function LoginPage() {
           initial={{ opacity:0 }} animate={isLoaded ? { opacity:1 } : {}}
           transition={{ delay:1.6, duration:0.6 }}
           style={{ marginTop:28, textAlign:"center" }}>
-          <a href="#" style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:C.inkMuted, letterSpacing:"0.2em", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`, paddingBottom:2 }}>
-            Wachtwoord vergeten?
-          </a>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:C.inkMuted, letterSpacing:"0.2em", textTransform:"uppercase" }}>
+            Waterschoot — Design 25/26
+          </span>
         </motion.div>
 
       </motion.div>

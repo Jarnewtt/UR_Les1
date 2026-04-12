@@ -21,7 +21,6 @@ const defaultPanels: Panel[] = Array.from({ length: 12 }, (_, i) => ({
   sub: `Paneel ${String(i + 1).padStart(2,"0")}`,
 }));
 
-const SURVEY_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform";
 
 export default function AdminPageModern() {
   // --- PAGE STATE ---
@@ -113,8 +112,14 @@ export default function AdminPageModern() {
         .admin-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
       `}</style>
 
-      {/* Page content — ArchitectuurPageModern renders its own layout */}
-      <ArchitectuurPageModern />
+      {/* Page content — props drive the live preview */}
+      <ArchitectuurPageModern
+        heroTop={titleTop}
+        heroBottom={titleBottom}
+        tribute={tribute}
+        introText={introText}
+        panels={panels}
+      />
 
       {/* Floating admin panel — B&W stijl */}
       <div
@@ -122,7 +127,7 @@ export default function AdminPageModern() {
         style={{
           position: "fixed", top: 0, left: 0,
           transform: "translate(0px, 200px)",
-          zIndex: 9999, display: "flex", alignItems: "flex-start",
+          zIndex: 8000, display: "flex", alignItems: "flex-start",
           willChange: "transform",
           fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
           filter: "drop-shadow(0 8px 40px rgba(0,0,0,0.85))",
@@ -166,7 +171,7 @@ export default function AdminPageModern() {
         <div
           className="admin-scroll"
           style={{
-            width: panelOpen ? "340px" : "0px",
+            width: panelOpen ? "min(340px, calc(100vw - 52px))" : "0px",
             maxHeight: "calc(100vh - 80px)",
             overflowY: panelOpen ? "auto" : "hidden",
             overflowX: "hidden",
@@ -174,13 +179,15 @@ export default function AdminPageModern() {
             background: "rgba(8,8,8,0.98)",
             backdropFilter: "blur(24px)",
             borderRadius: "0 16px 16px 0",
-            border: panelOpen ? "1px solid #222" : "none",
+            borderTop: panelOpen ? "1px solid #222" : "none",
+            borderRight: panelOpen ? "1px solid #222" : "none",
+            borderBottom: panelOpen ? "1px solid #222" : "none",
             borderLeft: "none",
             flexShrink: 0,
           }}
         >
           {panelOpen && (
-            <div style={{ padding: "0 0 48px", minWidth: "340px" }}>
+            <div style={{ padding: "0 0 48px", minWidth: "min(340px, calc(100vw - 52px))" }}>
 
               {/* Drag handle */}
               <div
@@ -216,22 +223,6 @@ export default function AdminPageModern() {
                   <span style={{ color: "#fff", fontSize: "12px", fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase" }}>Beheer Paneel</span>
                   <p style={{ color: "#444", fontSize: "11px", margin: "3px 0 0" }}>Pas de tentoonstelling live aan</p>
                 </div>
-
-                <a href={SURVEY_URL} target="_blank" rel="noopener noreferrer"
-                  style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    gap: "9px", width: "100%", padding: "13px 0", marginBottom: "22px",
-                    background: "#fff", color: "#000", fontWeight: 800, fontSize: "11px",
-                    letterSpacing: "0.1em", textTransform: "uppercase",
-                    borderRadius: "8px", textDecoration: "none",
-                    boxShadow: "0 4px 22px rgba(255,255,255,0.1)", boxSizing: "border-box",
-                    transition: "background 0.2s",
-                  }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="black" style={{ flexShrink: 0 }}>
-                    <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 16h8v1H8v-1zm0-3h8v1H8v-1zm0-3h5v1H8v-1z"/>
-                  </svg>
-                  Vul de Google Enquête in
-                </a>
 
                 <AdminDivider />
                 <AdminSectionTitle label="Hero Tekst" marker="01" />
