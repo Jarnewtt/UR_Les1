@@ -1,3 +1,10 @@
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Projecten",
+  robots: { index: false, follow: false },
+}
+
 export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">

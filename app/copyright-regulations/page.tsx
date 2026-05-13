@@ -1,10 +1,15 @@
-"use client"
-
-import { useStyle } from "@/components/useStyle"
-import { AnimatePresence, motion } from "framer-motion"
-import LegalPageModern    from "@/components/LegalPageModern"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 import LegalPageIndustrial from "@/components/LegalPageIndustrial"
-import type { LegalSection } from "@/components/LegalPageModern"
+
+export const metadata: Metadata = {
+  title: "Auteursrecht",
+  description:
+    "Auteursrechtinformatie van Jarne Waterschoot. Alle ontwerpen, illustraties en visuele creaties zijn beschermd onder het Belgisch auteursrecht.",
+  robots: { index: false, follow: false },
+}
+
+type LegalSection = { heading: string; body: ReactNode }
 
 const UPDATED = "April 2025"
 
@@ -77,33 +82,12 @@ const sections: LegalSection[] = [
 ]
 
 export default function CopyrightPage() {
-  const { style } = useStyle()
-
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {style === "industrial" ? (
-          <LegalPageIndustrial
-            code="Doc — 02 / Juridisch"
-            title="Auteursrecht"
-            updated={UPDATED}
-            sections={sections}
-          />
-        ) : (
-          <LegalPageModern
-            number="Juridisch — 02"
-            title="Auteursrecht"
-            updated={UPDATED}
-            sections={sections}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+    <LegalPageIndustrial
+      code="Doc — 02 / Juridisch"
+      title="Auteursrecht"
+      updated={UPDATED}
+      sections={sections}
+    />
   )
 }

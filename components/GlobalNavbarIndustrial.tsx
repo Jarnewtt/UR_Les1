@@ -12,10 +12,10 @@
 import GlobalNavbarBase, { type NavTheme } from "@/components/GlobalNavbarBase"
 
 const INDUSTRIAL_THEME: NavTheme = {
-  accent:     "#FF5C1A",
+  accent:     "#1A1AFF",
   prefix:     "ni",
   label:      "Industrieel",
-  navBgDark:  "#1E1C1A",   // warm gunmetal steel — clear contrast vs body #080808
+  navBgDark:  "#1A1816",
 }
 
 export default function GlobalNavbarIndustrial() {

@@ -1,27 +1,24 @@
-"use client"
-
-import { useStyle } from "@/components/useStyle"
-import { AnimatePresence, motion } from "framer-motion"
+import type { Metadata } from "next"
 import CineCityPageIndustrial from "@/components/CineCityPageIndustrial"
-import CineCityPageModern     from "@/components/CineCityPageModern"
+
+export const metadata: Metadata = {
+  title: "CineCity",
+  description:
+    "CineCity — een branding- en campagneproject van Jarne Waterschoot. Visuele identiteit, poster- en afficheontwerpvoor een cinematisch filmplatform.",
+  openGraph: {
+    title: "CineCity — Jarne Waterschoot",
+    description:
+      "CineCity — een branding- en campagneproject van Jarne Waterschoot. Visuele identiteit en affichesontwerp voor een cinematisch filmplatform.",
+    url: "/CineCity",
+    images: [{ url: "/img/CineCity_image.jpg", width: 1200, height: 630, alt: "CineCity — branding project door Jarne Waterschoot" }],
+  },
+  twitter: { images: ["/img/CineCity_image.jpg"] },
+  other: {
+    "description:fr": "CineCity — un projet de branding et de campagne par Jarne Waterschoot. Identité visuelle et conception d'affiches pour une plateforme cinématographique.",
+    "description:en": "CineCity — a branding and campaign project by Jarne Waterschoot. Visual identity and poster design for a cinematic film platform.",
+  },
+}
 
 export default function CineCityPage() {
-  const { style } = useStyle()
-
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{    opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {style === "industrial"
-          ? <CineCityPageIndustrial />
-          : <CineCityPageModern />
-        }
-      </motion.div>
-    </AnimatePresence>
-  )
+  return <CineCityPageIndustrial />
 }

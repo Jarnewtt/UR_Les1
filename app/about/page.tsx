@@ -1,27 +1,24 @@
-"use client"
-
-import { useStyle } from "@/components/useStyle"
-import { AnimatePresence, motion } from "framer-motion"
+import type { Metadata } from "next"
 import AboutPageIndustrial from "@/components/AboutPageIndustrial"
-import AboutPageModern     from "@/components/AboutPageModern"
+
+export const metadata: Metadata = {
+  title: "Over mij",
+  description:
+    "Ontdek wie Jarne Waterschoot is — grafisch ontwerper met een passie voor branding, typografie en esthetische oplossingen die merken laten opvallen.",
+  openGraph: {
+    title: "Over mij — Jarne Waterschoot",
+    description:
+      "Ontdek wie Jarne Waterschoot is — grafisch ontwerper met een passie voor branding, typografie en esthetische oplossingen die merken laten opvallen.",
+    url: "/about",
+    images: [{ url: "/img/portfolio_about.png", width: 1200, height: 630, alt: "Jarne Waterschoot — grafisch ontwerper" }],
+  },
+  twitter: { images: ["/img/portfolio_about.png"] },
+  other: {
+    "description:fr": "Découvrez qui est Jarne Waterschoot — designer graphique passionné par le branding, la typographie et les solutions esthétiques qui font remarquer les marques.",
+    "description:en": "Discover who Jarne Waterschoot is — graphic designer with a passion for branding, typography and aesthetic solutions that make brands stand out.",
+  },
+}
 
 export default function AboutPage() {
-  const { style } = useStyle()
-
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{    opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {style === "industrial"
-          ? <AboutPageIndustrial />
-          : <AboutPageModern />
-        }
-      </motion.div>
-    </AnimatePresence>
-  )
+  return <AboutPageIndustrial />
 }

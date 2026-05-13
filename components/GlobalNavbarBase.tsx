@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 /* ================================================================
  * GlobalNavbarBase.tsx
@@ -17,8 +17,7 @@ import {
   useScroll,
   useSpring,
 } from "framer-motion"
-import StyleToggle from "@/components/StyleToggle"
-import { useStyle }  from "@/components/useStyle"
+import { trackNavClick, trackThemeChange } from "@/lib/analytics"
 
 /* ----------------------------------------------------------------
  * Types
@@ -35,20 +34,14 @@ const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 const EASE_MENU: [number, number, number, number] = [0.76, 0, 0.24, 1]
 
 type NavLink = { label: string; href: string }
-type Project = { name: string; href: string; year: string }
 
 const NAV_LINKS: NavLink[] = [
   { label: "Welkom",     href: "/home" },
-  { label: "Over mij",      href: "/about" },
-  { label: "Projecten", href: "#projects" },
+  { label: "Over mij",  href: "/about" },
+  { label: "Projecten", href: "/projects" },
   { label: "Contact",   href: "/contact" },
 ]
 
-const PROJECTS: Project[] = [
-  { name: "Hélène Binet",    href: "/Architectuur", year: "2025" },
-  { name: "CineCity",        href: "/CineCity",     year: "2026" },
-  { name: "C for chocolate", href: "/Chocolate",    year: "2026" },
-]
 
 const MEMBER_LINKS = [
   { label: "Aanmelden",  href: "/login",     hint: "Gewone gebruiker" },
@@ -107,11 +100,13 @@ function HamburgerButton({
   accent,
   navInk,
   onClick,
+  sharp,
 }: {
   open: boolean
   accent: string
   navInk: string
   onClick: () => void
+  sharp?: boolean
 }) {
   const [hover, setHover] = useState(false)
 
@@ -152,7 +147,7 @@ function HamburgerButton({
             /* middle bar extends on hover, shrinks when open */
             width: open ? (i === 1 ? 0 : 22) : (i === 1 && hover ? 22 : w),
             height: 1.5,
-            borderRadius: 1,
+            borderRadius: sharp ? 0 : 1,
             background: (open || hover) ? accent : navInk,
             transformOrigin: "center",
             transition: "width .4s cubic-bezier(0.16,1,0.3,1), background .3s",
@@ -172,11 +167,13 @@ function ThemeToggle({
   onToggle,
   accent,
   ink,
+  sharp,
 }: {
   isDark: boolean
   onToggle: () => void
   accent: string
   ink: string
+  sharp?: boolean
 }) {
   const W = 44, H = 24, R = 9
   const PAD = 3
@@ -194,17 +191,26 @@ function ThemeToggle({
     >
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
         <rect
-          x="1" y="1" width={W - 2} height={H - 2} rx={(H - 2) / 2}
+          x="1" y="1" width={W - 2} height={H - 2} rx={sharp ? 3 : (H - 2) / 2}
           fill={isDark ? hexAlpha(accent, 0.13) : hexAlpha(ink, 0.09)}
           stroke={isDark ? accent : ink}
           strokeWidth="0.8"
           style={{ transition: "all .35s" }}
         />
-        <circle
-          cx={tx} cy={H / 2} r={R - 1}
-          fill={isDark ? accent : ink}
-          style={{ transition: "all .35s cubic-bezier(0.16,1,0.3,1)" }}
-        />
+        {sharp ? (
+          <rect
+            x={tx - (R - 1)} y={H / 2 - (R - 1)} width={(R - 1) * 2} height={(R - 1) * 2}
+            rx={2}
+            fill={isDark ? accent : ink}
+            style={{ transition: "all .35s cubic-bezier(0.16,1,0.3,1)" }}
+          />
+        ) : (
+          <circle
+            cx={tx} cy={H / 2} r={R - 1}
+            fill={isDark ? accent : ink}
+            style={{ transition: "all .35s cubic-bezier(0.16,1,0.3,1)" }}
+          />
+        )}
       </svg>
     </button>
   )
@@ -290,12 +296,10 @@ function LockIcon({ color, size = 11 }: { color: string; size?: number }) {
 
 export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
   const { accent, prefix, label: themeLabel } = theme
-  const { style, setStyle } = useStyle()
-
-  const [menuOpen, setMenuOpen]       = usePersistentMenuOpen()
-  const [projectOpen, setProjectOpen] = useState(false)
-  const [scrolled, setScrolled]       = useState(false)
-  const [isDark, setIsDark]           = usePersistentDark()
+  const [menuOpen, setMenuOpen] = usePersistentMenuOpen()
+  const [scrolled, setScrolled] = useState(false)
+  const [isDark, setIsDark]     = usePersistentDark()
+  const [testzoneOpen, setTestzoneOpen] = useState(false)
 
   /* theme-aware palette — used for menu overlay content */
   const P = isDark
@@ -314,6 +318,13 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
   const { scrollYProgress } = useScroll()
   const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 })
 
+  // Set initial theme based on time of day (client-only, runs after hydration)
+  useEffect(() => {
+    const h = new Date().getHours()
+    setIsDark(h < 7 || h >= 19)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24)
     fn()
@@ -329,11 +340,12 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
 
   useEffect(() => {
     setMenuOpen(false)
-    setProjectOpen(false)
   }, [pathname, setMenuOpen])
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : ""
+    window.dispatchEvent(new CustomEvent("menu-change", { detail: { isOpen: menuOpen } }))
+    if (!menuOpen) setTestzoneOpen(false)
     return () => { document.body.style.overflow = "" }
   }, [menuOpen])
 
@@ -357,8 +369,6 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
       transition: { duration: 0.65, ease: EASE, delay: 0.3 + i * 0.07 },
     }),
   }
-
-  const REVEAL_R = 2400
 
   return (
     <>
@@ -387,7 +397,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           gap: 18px;
           perspective: 700px;
           font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(64px, 10vw, 150px);
+          font-size: clamp(64px, 10vw, 140px);
           line-height: 0.9;
           letter-spacing: -0.01em;
         }
@@ -440,8 +450,8 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           z-index: 1;
         }
         .${prefix}-header-logo img {
-          width: 42px;
-          height: 42px;
+          width: 54px;
+          height: 54px;
           object-fit: contain;
           filter: brightness(0) invert(1);
           opacity: 0.9;
@@ -515,7 +525,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
         .${prefix}-style-sel-sub {
           display: block;
           font-family: 'DM Mono', monospace;
-          font-size: 9px;
+          font-size: 14px;
           letter-spacing: .26em;
           text-transform: uppercase;
           transition: color .25s;
@@ -539,14 +549,14 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
         }
         .${prefix}-header-toggle-label {
           font-family: 'DM Mono', monospace;
-          font-size: 9px;
+          font-size: 14px;
           letter-spacing: .28em;
           text-transform: uppercase;
           color: ${NAV.mid};
         }
         .${prefix}-header-toggle-readout {
           font-family: 'DM Mono', monospace;
-          font-size: 9px;
+          font-size: 14px;
           letter-spacing: .22em;
           text-transform: uppercase;
           color: ${accent};
@@ -571,11 +581,11 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
         }
 
         .${prefix}-menu-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-          gap: 100px;
+          display: flex;
+          flex-direction: column;
+          gap: 0;
           flex: 1;
-          align-items: start;
+          align-items: stretch;
         }
 
         /* ---------- PROJECT SUB-LIST ---------- */
@@ -587,7 +597,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           padding: 14px 20px 14px 28px;
           border-left: 1px solid ${P.greyLt};
           font-family: 'DM Mono', monospace;
-          font-size: 12px;
+          font-size: 14px;
           letter-spacing: .16em;
           text-transform: uppercase;
           text-decoration: none;
@@ -600,7 +610,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           transform: translateX(10px);
         }
         .${prefix}-proj-name { color: ${P.ink}; }
-        .${prefix}-proj-year { color: ${accent}; font-size: 10px; white-space: nowrap; }
+        .${prefix}-proj-year { color: ${accent}; font-size: 14px; white-space: nowrap; }
 
         /* ---------- TESTZONE ASIDE ---------- */
         .${prefix}-testzone {
@@ -631,7 +641,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           border: 1px solid ${hexAlpha(accent, 0.4)};
           background: ${hexAlpha(accent, 0.08)};
           font-family: 'DM Mono', monospace;
-          font-size: 9px;
+          font-size: 14px;
           letter-spacing: .28em;
           text-transform: uppercase;
           color: ${accent};
@@ -651,7 +661,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
         }
         .${prefix}-testzone-desc {
           font-family: 'DM Mono', monospace;
-          font-size: 11px;
+          font-size: 14px;
           line-height: 1.7;
           letter-spacing: .04em;
           color: ${P.mid};
@@ -688,14 +698,14 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
         }
         .${prefix}-test-label-hint {
           font-family: 'DM Mono', monospace;
-          font-size: 9px;
+          font-size: 14px;
           letter-spacing: .2em;
           text-transform: uppercase;
           color: ${P.mid};
         }
         .${prefix}-test-arrow {
           font-family: 'DM Mono', monospace;
-          font-size: 16px;
+          font-size: 14px;
           color: ${P.mid};
           transition: color .25s, transform .35s cubic-bezier(0.16,1,0.3,1);
         }
@@ -724,11 +734,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
 
         /* ---------- RESPONSIVE ---------- */
         @media (max-width: 1000px) {
-          .${prefix}-menu-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 48px;
-          }
-          .${prefix}-testzone { justify-self: stretch; max-width: 100%; margin-top: 0; }
+          /* menu-grid is single-column flex — no override needed */
         }
         @media (max-width: 780px) {
           :root { --navbar-h: 64px; }
@@ -736,7 +742,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           .${prefix}-header-toggles { gap: 12px; }
           .${prefix}-header-toggle-label,
           .${prefix}-header-toggle-readout { display: none; }
-          .${prefix}-header-logo img { width: 34px; height: 34px; }
+          .${prefix}-header-logo img { width: 42px; height: 42px; }
           /* On mobile: hide style toggle + its divider from the header */
           .${prefix}-style-group   { display: none; }
           .${prefix}-divider-style { display: none; }
@@ -744,11 +750,11 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           .${prefix}-style-sel { display: block; }
 
           .${prefix}-menu-inner { padding: 100px 20px 40px; gap: 36px; }
-          .${prefix}-dice { font-size: clamp(54px, 14vw, 96px); gap: 14px; }
+          .${prefix}-dice { font-size: clamp(72px, 18vw, 140px); gap: 10px; }
 
           .${prefix}-proj-sub {
             padding: 12px 20px 12px 18px;
-            font-size: 11px;
+            font-size: 14px;
           }
           .${prefix}-testzone { padding: 24px 22px; }
         }
@@ -772,6 +778,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
           .${prefix}-nav-item:hover .${prefix}-dice-cube { transform: none; }
           .${prefix}-nav-item:hover .${prefix}-dice-front { color: ${accent}; }
         }
+
       `}</style>
 
       {/* ============== HEADER ============== */}
@@ -787,9 +794,8 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
         {/* top accent line */}
         <div
           style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: 1,
-            background: `linear-gradient(90deg, ${accent}, ${accent}55 40%, transparent)`,
-            boxShadow: `0 0 12px ${accent}66`,
+            position: "absolute", top: 0, left: 0, right: 0, height: 2,
+            background: `linear-gradient(90deg, ${accent}, ${accent}55 60%, transparent)`,
             opacity: menuOpen ? 0 : 1,
             transition: "opacity .4s",
           }}
@@ -801,7 +807,8 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
             open={menuOpen}
             accent={accent}
             navInk={NAV.ink}
-            onClick={() => setMenuOpen(v => !v)}
+            onClick={() => { const next = !menuOpen; setMenuOpen(next); trackNavClick(next ? 'menu_open' : 'menu_close', 'nav_menu') }}
+            sharp={true}
           />
 
           {/* CENTER — logo linked to home */}
@@ -809,28 +816,19 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
             href="/home"
             aria-label="Home"
             className={`${prefix}-header-logo`}
+            onClick={() => trackNavClick('logo', '/home')}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/img/logo.png" alt="Logo" width={26} height={26} />
           </Link>
 
-          {/* RIGHT — style toggle (desktop only) + theme toggle (always) */}
+          {/* RIGHT — theme toggle */}
           <div
             className={`${prefix}-header-toggles`}
             style={{ position: "relative", zIndex: 10000 }}
           >
-            {/* Style toggle: visible on desktop, hidden on mobile via CSS */}
-            <div className={`${prefix}-style-group`} aria-label="Wissel visuele stijl">
-              <StyleToggle />
-            </div>
-
-            {/* Divider: hides with style group on mobile */}
-            <span className={`${prefix}-divider-style`} />
-
-            {/* Theme toggle: always visible */}
             <div className={`${prefix}-header-toggle-group`} aria-label="Wissel kleurthema">
-              <span className={`${prefix}-header-toggle-label`}>Thema</span>
-              <ThemeToggle isDark={isDark} onToggle={() => setIsDark(v => !v)} accent={accent} ink={NAV.ink} />
+<ThemeToggle isDark={isDark} onToggle={() => { const next = !isDark; setIsDark(next); trackThemeChange(next ? 'dark' : 'light') }} accent={accent} ink={NAV.ink} sharp={true} />
             </div>
           </div>
         </div>
@@ -843,8 +841,7 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
             transformOrigin: "0% 50%",
             scaleX: progress,
             width: "100%",
-            opacity: menuOpen ? 0 : 0.9,
-            boxShadow: `0 0 8px ${accent}88`,
+            opacity: menuOpen ? 0 : 0.85,
           }}
         />
       </header>
@@ -864,16 +861,16 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
             style={{ position: "fixed", inset: 0, zIndex: 8900, overflow: "hidden" }}
           >
             <motion.div
-              initial={{ clipPath: `circle(0px at 54px 36px)` }}
-              animate={{ clipPath: `circle(${REVEAL_R}px at 54px 36px)` }}
-              exit={{    clipPath: `circle(0px at 54px 36px)` }}
+              initial={{ clipPath: "polygon(54px 36px, 54px 36px, 54px 36px, 54px 36px)" }}
+              animate={{ clipPath: "polygon(-200px -200px, 4000px -200px, 4000px 4000px, -200px 4000px)" }}
+              exit={{    clipPath: "polygon(54px 36px, 54px 36px, 54px 36px, 54px 36px)" }}
               transition={{ duration: reduced ? 0.2 : 0.7, ease: EASE_MENU }}
               style={{ position: "absolute", inset: 0, background: accent }}
             />
             <motion.div
-              initial={{ clipPath: `circle(0px at 54px 36px)` }}
-              animate={{ clipPath: `circle(${REVEAL_R}px at 54px 36px)` }}
-              exit={{    clipPath: `circle(0px at 54px 36px)` }}
+              initial={{ clipPath: "polygon(54px 36px, 54px 36px, 54px 36px, 54px 36px)" }}
+              animate={{ clipPath: "polygon(-200px -200px, 4000px -200px, 4000px 4000px, -200px 4000px)" }}
+              exit={{    clipPath: "polygon(54px 36px, 54px 36px, 54px 36px, 54px 36px)" }}
               transition={{ duration: reduced ? 0.2 : 0.65, ease: EASE_MENU, delay: reduced ? 0 : 0.16 }}
               style={{ position: "absolute", inset: 0, background: P.bg }}
             />
@@ -892,159 +889,93 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
             >
               <div className={`${prefix}-menu-inner`}>
 
-                {/* MOBILE ONLY — prominent style selector at the top of the menu */}
-                <motion.div
-                  className={`${prefix}-style-sel`}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: EASE, delay: reduced ? 0 : 0.22 }}
-                >
-                  <div className={`${prefix}-style-sel-opts`}>
-                    <button
-                      onClick={() => setStyle("industrial")}
-                      className={`${prefix}-style-sel-opt${style === "industrial" ? ` ${prefix}-style-sel-opt--active` : ""}`}
-                      aria-pressed={style === "industrial"}
-                    >
-                      <span className={`${prefix}-style-sel-name`}>Industrieel</span>
-                      <span className={`${prefix}-style-sel-sub`}>Stijl A</span>
-                    </button>
-                    <span className={`${prefix}-style-sel-sep`} />
-                    <button
-                      onClick={() => setStyle("modern")}
-                      className={`${prefix}-style-sel-opt${style === "modern" ? ` ${prefix}-style-sel-opt--active` : ""}`}
-                      aria-pressed={style === "modern"}
-                    >
-                      <span className={`${prefix}-style-sel-name`}>Modern</span>
-                      <span className={`${prefix}-style-sel-sub`}>Stijl B</span>
-                    </button>
-                  </div>
-                </motion.div>
-
                 <div className={`${prefix}-menu-grid`}>
                   {/* ---- LEFT: nav links ---- */}
                   <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {NAV_LINKS.map((link, i) => {
-                      const isProjects = link.href === "#projects"
-                      return (
-                        <motion.div
-                          key={link.href}
-                          custom={i}
-                          variants={linkVariants}
-                          initial="closed"
-                          animate="open"
-                        >
-                          {isProjects ? (
-                            <div>
-                              <DiceLink
-                                label={link.label}
-                                prefix={prefix}
-                                asButton
-                                isFirst={i === 0}
-                                onClick={() => setProjectOpen(v => !v)}
-                                buttonProps={{ "aria-expanded": projectOpen }}
-                                trailing={
-                                  <motion.span
-                                    animate={{ rotate: projectOpen ? 90 : 0 }}
-                                    transition={{ duration: 0.35, ease: EASE }}
-                                    style={{
-                                      display: "inline-block",
-                                      color: accent,
-                                      fontSize: "0.32em",
-                                      lineHeight: 1,
-                                    }}
-                                  >
-                                    →
-                                  </motion.span>
-                                }
-                              />
-
-                              <AnimatePresence>
-                                {projectOpen && (
-                                  <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.4, ease: EASE }}
-                                    style={{ overflow: "hidden", paddingLeft: 8, paddingTop: 12 }}
-                                  >
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                      {PROJECTS.map((p, pi) => (
-                                        <motion.div
-                                          key={p.href}
-                                          initial={{ x: -20, opacity: 0 }}
-                                          animate={{ x: 0, opacity: 1 }}
-                                          transition={{ duration: 0.45, ease: EASE, delay: 0.05 + pi * 0.06 }}
-                                        >
-                                          <Link
-                                            href={p.href}
-                                            className={`${prefix}-proj-sub`}
-                                            onClick={() => setMenuOpen(false)}
-                                          >
-                                            <span className={`${prefix}-proj-name`}>{p.name}</span>
-                                            <span className={`${prefix}-proj-year`}>{p.year}</span>
-                                          </Link>
-                                        </motion.div>
-                                      ))}
-                                    </div>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          ) : (
-                            <DiceLink
-                              label={link.label}
-                              href={link.href}
-                              prefix={prefix}
-                              isFirst={i === 0}
-                              onClick={() => setMenuOpen(false)}
-                            />
-                          )}
-                        </motion.div>
-                      )
-                    })}
+                    {NAV_LINKS.map((link, i) => (
+                      <motion.div
+                        key={link.href}
+                        custom={i}
+                        variants={linkVariants}
+                        initial="closed"
+                        animate="open"
+                      >
+                        <DiceLink
+                          label={link.label}
+                          href={link.href}
+                          prefix={prefix}
+                          isFirst={i === 0}
+                          onClick={() => { setMenuOpen(false); trackNavClick(link.label, link.href) }}
+                        />
+                      </motion.div>
+                    ))}
                   </nav>
 
-                  {/* ---- RIGHT: testzone (Behind the scenes) ---- */}
-                  <motion.aside
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, ease: EASE, delay: reduced ? 0 : 0.6 }}
-                    className={`${prefix}-testzone`}
+                  {/* ---- Testzone dropdown ---- */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: EASE, delay: reduced ? 0 : 0.55 }}
+                    style={{ borderTop: `1px solid ${P.greyLt}`, marginTop: 16 }}
                   >
-                    <span className={`${prefix}-testzone-corner tr`} />
-                    <span className={`${prefix}-testzone-corner bl`} />
-
-                    <div className={`${prefix}-testzone-tag`}>
-                      <LockIcon color={accent} size={9} />
-                      <span>Testzone</span>
-                    </div>
-
-                    <div className={`${prefix}-testzone-title`}>
-                      Achter de <em>schermen</em>.
-                    </div>
-                    <div className={`${prefix}-testzone-desc`}>
-                      Hier mag je rondklikken. Login als gebruiker, bekijk het admin-dashboard,
-                      of switch tussen rollen — alles is bedoeld om te testen.
-                    </div>
-
-                    <div>
-                      {MEMBER_LINKS.map(link => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className={`${prefix}-test-link`}
-                          onClick={() => setMenuOpen(false)}
+                    <button
+                      type="button"
+                      onClick={() => setTestzoneOpen(v => !v)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 14,
+                        padding: "18px 0", background: "none", border: "none",
+                        cursor: "pointer", width: "100%",
+                      }}
+                    >
+                      <LockIcon color={testzoneOpen ? accent : P.mid} size={12} />
+                      <span style={{
+                        fontFamily: "'DM Mono', monospace", fontSize: 14,
+                        letterSpacing: ".28em", textTransform: "uppercase",
+                        color: testzoneOpen ? accent : P.mid, flex: 1, textAlign: "left",
+                        transition: "color .25s",
+                      }}>
+                        Testzone
+                      </span>
+                      <motion.span
+                        animate={{ rotate: testzoneOpen ? 180 : 0 }}
+                        transition={{ duration: 0.35, ease: EASE }}
+                        style={{
+                          color: testzoneOpen ? accent : P.mid, fontSize: 14,
+                          fontFamily: "'DM Mono', monospace", transition: "color .25s",
+                          display: "inline-block",
+                        }}
+                      >
+                        ↓
+                      </motion.span>
+                    </button>
+                    <AnimatePresence>
+                      {testzoneOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.4, ease: EASE }}
+                          style={{ overflow: "hidden" }}
                         >
-                          <LockIcon color={accent} size={11} />
-                          <span className={`${prefix}-test-label`}>
-                            <span className={`${prefix}-test-label-main`}>{link.label}</span>
-                            <span className={`${prefix}-test-label-hint`}>{link.hint}</span>
-                          </span>
-                          <span className={`${prefix}-test-arrow`}>→</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </motion.aside>
+                          {MEMBER_LINKS.map(link => (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              className={`${prefix}-test-link`}
+                              onClick={() => { setMenuOpen(false); trackNavClick(link.label, link.href) }}
+                            >
+                              <LockIcon color={accent} size={11} />
+                              <span className={`${prefix}-test-label`}>
+                                <span className={`${prefix}-test-label-main`}>{link.label}</span>
+                                <span className={`${prefix}-test-label-hint`}>{link.hint}</span>
+                              </span>
+                              <span className={`${prefix}-test-arrow`}>→</span>
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
               </div>
 
@@ -1066,19 +997,19 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
                   }}
                 />
                 <span style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: 9,
+                  fontFamily: "'DM Mono', monospace", fontSize: 14,
                   letterSpacing: ".25em", textTransform: "uppercase", color: P.mid,
                 }}>
                   Jarne Waterschoot — Portfolio
                 </span>
                 <span style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: 10,
+                  fontFamily: "'DM Mono', monospace", fontSize: 14,
                   letterSpacing: ".2em", color: accent,
                 }}>
                   {themeLabel}
                 </span>
                 <span style={{
-                  fontFamily: "'DM Mono', monospace", fontSize: 9,
+                  fontFamily: "'DM Mono', monospace", fontSize: 14,
                   letterSpacing: ".25em", textTransform: "uppercase",
                   color: P.mid, textAlign: "right",
                 }}>
@@ -1093,3 +1024,5 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
     </>
   )
 }
+
+

@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
   motion, useScroll, useTransform, useInView,
   AnimatePresence,
 } from 'framer-motion';
+import ProjectNav from "@/components/ProjectNav";
+import { trackLightboxOpen, trackLightboxClose, trackLightboxNav, trackAccordionToggle, trackSlideChange } from "@/lib/analytics";
 
 type Tokens = {
   bg: string; surface: string; surfaceAlt: string;
@@ -47,7 +49,7 @@ function useTheme(): Tokens {
 }
 
 type Panel = { id: number; imagePath: string; label: string; sub: string };
-type Props  = { heroTop?: string; heroBottom?: string; tribute?: string; introText?: string; panels?: Panel[] };
+type Props  = { heroTop?: string; heroBottom?: string; tribute?: string; introText?: string; panels?: Panel[]; accentColor?: string; headingFont?: string; galleryImages?: string[]; heroSlides?: { src: string; caption: string }[] };
 
 const DEFAULT_PANELS: Panel[] = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
@@ -98,11 +100,11 @@ function RevealText({ children, delay = 0 }: { children: React.ReactNode; delay?
 function SlideCounter({ current, total, orange, inkMuted }: { current: number; total: number; orange: string; inkMuted: string }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 11, color: orange, letterSpacing: "0.1em" }}>
+      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 14, color: orange, letterSpacing: "0.1em" }}>
         {String(current + 1).padStart(2, "0")}
       </span>
       <div style={{ width: 1, height: 40, background: `linear-gradient(to bottom, ${orange}80, transparent)` }} />
-      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 11, color: inkMuted, letterSpacing: "0.1em" }}>
+      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 14, color: inkMuted, letterSpacing: "0.1em" }}>
         {String(total).padStart(2, "0")}
       </span>
     </div>
@@ -136,12 +138,11 @@ function PanelCard({ panel, index, isUnfolded, onOpen, C }: { panel: Panel; inde
       </div>
       <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", transform: "rotateY(180deg)", background: "#F0EDE8", padding: "20px 16px", display: "flex", flexDirection: "column", justifyContent: "space-between", border: "1px solid #C4BEB4" }}>
         <div>
-          <div style={{ fontSize: 9, letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(8,8,7,0.4)", marginBottom: 8 }}>Tegenstelling</div>
-          <div style={{ fontSize: 12, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", color: "#080807", lineHeight: 1.2 }}>{panel.label.toUpperCase()}</div>
+          <div style={{ fontSize: 22, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", color: "#080807", lineHeight: 1.1 }}>{panel.label.toUpperCase()}</div>
         </div>
         <div>
-          <div style={{ height: 1, background: C.orange, opacity: 0.4, marginBottom: 10 }} />
-          <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(8,8,7,0.45)", lineHeight: 1.8 }}>Studie naar Lijnen<br />FOMU × Binet 2025</div>
+          <div style={{ height: 1, background: C.orange, opacity: 0.4, marginBottom: 8 }} />
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(8,8,7,0.35)", lineHeight: 1.7 }}>Studie naar Lijnen<br />FOMU × Binet 2025</div>
         </div>
       </div>
     </div>
@@ -154,14 +155,14 @@ function GalleryItem({ src, index, onClick, C }: { src: string; index: number; o
   return (
     <motion.div ref={ref} initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.8, delay: (index % 5) * 0.08, ease: EASE }}
       onClick={onClick}
-      style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", background: C.surface, cursor: "none", border: `0.5px solid ${C.border}`, transition: "background 0.45s ease, border-color 0.45s ease" }}>
+      style={{ position: "relative", aspectRatio: "3/4", overflow: "hidden", background: C.surface, border: `0.5px solid ${C.border}`, transition: "background 0.45s ease, border-color 0.45s ease" }}>
       <img src={src} alt={`Fragment ${index + 1}`}
         style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%) contrast(1.1)", opacity: C.isLight ? 0.8 : 0.65, transition: "filter 1s ease, opacity 1s ease, transform 1.2s ease", transform: "scale(1.02)" }}
         onMouseEnter={e => { const el = e.currentTarget; el.style.filter = "grayscale(0%)"; el.style.opacity = "1"; el.style.transform = "scale(1.06)"; }}
         onMouseLeave={e => { const el = e.currentTarget; el.style.filter = "grayscale(100%) contrast(1.1)"; el.style.opacity = C.isLight ? "0.8" : "0.65"; el.style.transform = "scale(1.02)"; }} />
       <div
         style={{
-          position: "absolute", bottom: 12, left: 12, fontSize: 8,
+          position: "absolute", bottom: 12, left: 12, fontSize: 14,
           letterSpacing: "0.28em", textTransform: "uppercase",
           color: "transparent", background: "transparent",
           padding: "4px 8px", transition: "color 0.4s ease, background 0.4s ease",
@@ -187,9 +188,20 @@ export default function HeleneBinetPage({
   tribute = "Een tribuut aan Hélène Binet",
   introText = "",
   panels = DEFAULT_PANELS,
+  accentColor,
+  headingFont,
+  galleryImages: galleryProp,
+  heroSlides: slidesProp,
 }: Props) {
 
-  const C = useTheme();
+  const themeC = useTheme();
+  const C = accentColor ? { ...themeC, orange: accentColor } : themeC;
+  const hFont = headingFont ? `'${headingFont}', sans-serif` : "'Bebas Neue', sans-serif";
+  const extraFontParam = (headingFont && headingFont !== "Bebas Neue")
+    ? `&family=${headingFont.replace(/ /g, "+")}`
+    : "";
+  const localGallery = galleryProp ?? GALLERY;
+  const localSlides = slidesProp ?? HERO_SLIDES;
 
   const [isUnfolded, setIsUnfolded] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -210,21 +222,21 @@ export default function HeleneBinetPage({
     const tick = setInterval(() => {
       const elapsed = Date.now() - start;
       if (elapsed >= DURATION) {
-        setActiveSlide(i => (i + 1) % HERO_SLIDES.length);
+        setActiveSlide(i => (i + 1) % localSlides.length);
         start = Date.now();
       }
     }, 50);
     return () => clearInterval(tick);
   }, []);
 
-  const openLightbox = (i: number) => { setLightboxIndex(i); setSelectedImage(GALLERY[i]); };
+  const openLightbox = (i: number) => { setLightboxIndex(i); setSelectedImage(localGallery[i]); trackLightboxOpen(String(i), 'architectuur'); };
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (!selectedImage) return;
-      if (e.key === "ArrowRight") setLightboxIndex(i => { const n = (i + 1) % GALLERY.length; setSelectedImage(GALLERY[n]); return n; });
-      if (e.key === "ArrowLeft")  setLightboxIndex(i => { const n = (i - 1 + GALLERY.length) % GALLERY.length; setSelectedImage(GALLERY[n]); return n; });
-      if (e.key === "Escape") setSelectedImage(null);
+      if (e.key === "ArrowRight") setLightboxIndex(i => { const n = (i + 1) % localGallery.length; setSelectedImage(localGallery[n]); return n; });
+      if (e.key === "ArrowLeft")  setLightboxIndex(i => { const n = (i - 1 + localGallery.length) % localGallery.length; setSelectedImage(localGallery[n]); return n; });
+      if (e.key === "Escape") { setSelectedImage(null); trackLightboxClose('architectuur'); }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
@@ -233,12 +245,13 @@ export default function HeleneBinetPage({
   const TT = "background 0.45s ease, color 0.45s ease, border-color 0.45s ease";
 
   return (
-    <div ref={containerRef} style={{ minHeight: "100vh", background: C.bg, color: C.ink, overflowX: "hidden", cursor: "none", fontFamily: "'DM Mono', monospace", transition: TT }}>
+    <div ref={containerRef} style={{ minHeight: "100vh", background: C.bg, color: C.ink, overflowX: "hidden", fontFamily: "'DM Mono', monospace", transition: TT }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;1,300&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue${extraFontParam}&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;1,300&display=swap');
+
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
         html { scroll-behavior:smooth; }
-        body { cursor:none !important; }
+        
         ::selection { background:${C.orange}; color:#fff; }
         ::-webkit-scrollbar { width:1px; }
         ::-webkit-scrollbar-thumb { background:${C.orange}60; }
@@ -278,7 +291,7 @@ export default function HeleneBinetPage({
 
           {/* ── BG SLIDESHOW with Ken Burns ── */}
           <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            {HERO_SLIDES.map((slide, i) => (
+            {localSlides.map((slide, i) => (
               <AnimatePresence key={i}>
                 {activeSlide === i && (
                   <motion.div
@@ -337,15 +350,15 @@ export default function HeleneBinetPage({
               transition={{ delay: 1, duration: 0.8 }}
               style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
-              {HERO_SLIDES.map((_, i) => (
-                <button key={i} onClick={() => { setActiveSlide(i); }}
+              {localSlides.map((_, i) => (
+                <button key={i} onClick={() => { setActiveSlide(i); trackSlideChange(i, '/Architectuur') }}
                   style={{
                     width: i === activeSlide ? 24 : 4,
                     height: 4,
-                    borderRadius: 2,
+                    borderRadius: 0,
                     background: i === activeSlide ? C.orange : "rgba(240,237,232,0.25)",
                     border: "none",
-                    cursor: "none",
+                    cursor: "pointer",
                     transition: "width 0.4s ease, background 0.4s ease",
                   }}
                 />
@@ -376,7 +389,7 @@ export default function HeleneBinetPage({
               animate={heroReady ? { opacity: 1, x: 0 } : {}}
               transition={{ delay: 1.2, duration: 0.8, ease: EASE }}
             >
-              <SlideCounter current={activeSlide} total={HERO_SLIDES.length} orange={C.orange} inkMuted="rgba(240,237,232,0.3)" />
+              <SlideCounter current={activeSlide} total={localSlides.length} orange={C.orange} inkMuted="rgba(240,237,232,0.3)" />
             </motion.div>
           </div>
 
@@ -404,11 +417,11 @@ export default function HeleneBinetPage({
                 <span style={{
                   fontFamily: "'DM Sans', sans-serif",
                   fontStyle: "italic", fontWeight: 300,
-                  fontSize: 13,
+                  fontSize: 14,
                   color: "rgba(240,237,232,0.85)",
                   letterSpacing: "0.06em",
                 }}>
-                  {HERO_SLIDES[activeSlide].caption}
+                  {localSlides[activeSlide].caption}
                 </span>
               </motion.div>
             </AnimatePresence>
@@ -420,7 +433,7 @@ export default function HeleneBinetPage({
                 animate={heroReady ? { y: 0, skewY: 0 } : {}}
                 transition={{ duration: 1.2, delay: 0.35, ease: EASE }}
                 style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontFamily: hFont,
                   fontSize: "clamp(64px, 10vw, 140px)",
                   lineHeight: 0.86,
                   letterSpacing: "0.015em",
@@ -437,7 +450,7 @@ export default function HeleneBinetPage({
                 animate={heroReady ? { y: 0, skewY: 0 } : {}}
                 transition={{ duration: 1.2, delay: 0.52, ease: EASE }}
                 style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontFamily: hFont,
                   fontSize: "clamp(64px, 10vw, 140px)",
                   lineHeight: 0.86,
                   letterSpacing: "0.015em",
@@ -462,7 +475,7 @@ export default function HeleneBinetPage({
               <span style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontStyle: "italic", fontWeight: 300,
-                fontSize: 15,
+                fontSize: "clamp(15px, 1.3vw, 18px)",
                 color: "rgba(240,237,232,0.85)",
               }}>
                 {tribute}
@@ -475,11 +488,11 @@ export default function HeleneBinetPage({
               transition={{ delay: 1.15, duration: 0.8 }}
               style={{ display: "flex", alignItems: "center", gap: 10, paddingLeft: 42 }}
             >
-              <span style={{ fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase", color: "rgba(240,237,232,0.75)" }}>
+              <span style={{ fontSize: 14, letterSpacing: "0.26em", textTransform: "uppercase", color: "rgba(240,237,232,0.75)" }}>
                 Jarne Waterschoot
               </span>
               <span style={{ width: 3, height: 3, borderRadius: "50%", background: C.orange, opacity: 0.5, flexShrink: 0 }} />
-              <span style={{ fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase", color: "rgba(240,237,232,0.75)" }}>
+              <span style={{ fontSize: 14, letterSpacing: "0.26em", textTransform: "uppercase", color: "rgba(240,237,232,0.75)" }}>
                 Fotografische studie
               </span>
             </motion.div>
@@ -494,13 +507,13 @@ export default function HeleneBinetPage({
       <section className="hb-intro-grid" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
         <div>
           <RevealText>
-            <div style={{ fontSize: 9, letterSpacing: "0.32em", textTransform: "uppercase", color: C.orange, marginBottom: 20, display: "flex", alignItems: "center", gap: 12, transition: "color 0.45s ease" }}>
+            <div style={{ fontSize: 14, letterSpacing: "0.32em", textTransform: "uppercase", color: C.orange, marginBottom: 20, display: "flex", alignItems: "center", gap: 12, transition: "color 0.45s ease" }}>
               <span style={{ width: 18, height: 1, background: C.orange, opacity: 0.7, display: "inline-block" }} />
               Project — FOMU Antwerpen
             </div>
           </RevealText>
           <RevealText delay={0.1}>
-            <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(32px, 4.5vw, 62px)", letterSpacing: "0.04em", lineHeight: 0.95, color: C.ink, marginBottom: 28, transition: "color 0.45s ease" }}>
+            <h2 style={{ fontFamily: hFont, fontSize: "clamp(32px, 4.5vw, 62px)", letterSpacing: "0.04em", lineHeight: 0.95, color: C.ink, marginBottom: 28, transition: "color 0.45s ease" }}>
               Mijn blik op<br />architecturaal<br />
               <span style={{ WebkitTextStroke: `clamp(0.4px, 0.15vw, 1.5px) ${C.orange}`, color: "transparent" }}>licht &amp; schaduw</span>
             </h2>
@@ -508,15 +521,15 @@ export default function HeleneBinetPage({
         </div>
         <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.9, delay: 0.2, ease: EASE }}>
           {introText ? (
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, transition: "color 0.45s ease" }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: "clamp(16px, 1.4vw, 20px)", lineHeight: 1.8, color: C.inkSub, transition: "color 0.45s ease" }}>
               {introText}
             </p>
           ) : (
             <>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, marginBottom: 28, transition: "color 0.45s ease" }}>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: "clamp(16px, 1.4vw, 20px)", lineHeight: 1.8, color: C.inkSub, marginBottom: 28, transition: "color 0.45s ease" }}>
                 In opdracht van het <span style={{ color: C.ink }}>FOMU te Antwerpen</span> analyseerde ik het fotografisch werk van Hélène Binet. Vanuit haar visuele stijl onderzocht ik hoe lijnen een belangrijke rol spelen in haar fotografie en vertaalde dit naar vijf visuele tegenstellingen rond lijnen. Deze werden uitgewerkt in een leporello die als tribuut tijdens een tentoonstelling zou kunnen worden uitgedeeld.
               </p>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: 15, lineHeight: 1.95, color: C.inkSub, transition: "color 0.45s ease" }}>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 300, fontSize: "clamp(16px, 1.4vw, 20px)", lineHeight: 1.8, color: C.inkSub, transition: "color 0.45s ease" }}>
                 Binet's analoge, contrastrijke manier van kijken diende als inspiratie. De beelden, de keuzes en de compositie zijn volledig van <span style={{ color: C.inkSub, fontStyle: "italic" }}>mijn hand</span>.
               </p>
             </>
@@ -524,8 +537,8 @@ export default function HeleneBinetPage({
           <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 1, background: C.border, transition: "background 0.45s ease" }}>
             {[["05", "Tegenstellingen"], ["10", "Foto's"]].map(([n, l], i) => (
               <div key={i} style={{ background: C.bg, padding: "24px 20px", transition: TT }}>
-                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: C.ink, lineHeight: 1, transition: "color 0.45s ease" }}>{n}</div>
-                <div style={{ fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: C.inkMuted, marginTop: 6, transition: "color 0.45s ease" }}>{l}</div>
+                <div style={{ fontFamily: hFont, fontSize: "clamp(28px, 3.5vw, 40px)", color: C.ink, lineHeight: 1, transition: "color 0.45s ease" }}>{n}</div>
+                <div style={{ fontSize: "clamp(11px, 1vw, 13px)", letterSpacing: "0.2em", textTransform: "uppercase", color: C.inkMuted, marginTop: 6, transition: "color 0.45s ease" }}>{l}</div>
               </div>
             ))}
           </div>
@@ -534,13 +547,13 @@ export default function HeleneBinetPage({
 
       {/* ── LEPORELLO ── */}
       <section id="lijnen" className="hidden md:block" style={{ borderBottom: `1px solid ${C.border}`, transition: TT }}>
-        <motion.div onClick={() => setIsUnfolded(u => !u)} whileHover={{ background: C.surfaceAlt }}
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "clamp(20px,4vw,32px) clamp(16px,5vw,60px)", cursor: "none", borderBottom: `1px solid ${C.border}`, transition: TT }}>
+        <motion.div onClick={() => { const next = !isUnfolded; setIsUnfolded(next); trackAccordionToggle('leporello', next ? 'open' : 'close', '/Architectuur') }} whileHover={{ background: C.surfaceAlt }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "clamp(20px,4vw,32px) clamp(16px,5vw,60px)", borderBottom: `1px solid ${C.border}`, transition: TT, cursor: "pointer" }}>
           <div>
-            <div style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 8, transition: "color 0.45s ease" }}>
+            <div style={{ fontSize: 14, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 8, transition: "color 0.45s ease" }}>
               {isUnfolded ? "Klik een paneel om te draaien" : "Klik om de studie te openen"}
             </div>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(20px,3vw,38px)", letterSpacing: "0.06em", color: C.ink, transition: "color 0.45s ease" }}>
+            <div style={{ fontFamily: hFont, fontSize: "clamp(20px,3vw,38px)", letterSpacing: "0.06em", color: C.ink, transition: "color 0.45s ease" }}>
               {isUnfolded ? "Sluit Leporello" : "Bekijk de Lijnen"}
             </div>
           </div>
@@ -555,7 +568,7 @@ export default function HeleneBinetPage({
               <img src={panel.imagePath} alt={panel.label} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%) contrast(1.15)" }} />
               {panel.label && (
                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.6)", padding: "4px 6px" }}>
-                  <p style={{ fontSize: 9, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(240,237,232,0.7)" }}>{panel.label}</p>
+                  <p style={{ fontSize: 14, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(240,237,232,0.7)" }}>{panel.label}</p>
                 </div>
               )}
             </div>
@@ -580,7 +593,7 @@ export default function HeleneBinetPage({
           {isUnfolded && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.6, delay: 1.2, ease: EASE }}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "20px 0 28px", borderTop: `1px solid ${C.border}`, transition: TT }}>
-              <span style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, transition: "color 0.45s ease" }}>Klik op een paneel om het te draaien</span>
+              <span style={{ fontSize: 14, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, transition: "color 0.45s ease" }}>Klik op een paneel om het te draaien</span>
               <div style={{ display: "flex", gap: 4 }}>
                 {[0, 1, 2].map(i => (
                   <motion.span key={i} animate={{ opacity: [0.15, 0.6, 0.15] }} transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.25 }}
@@ -597,54 +610,56 @@ export default function HeleneBinetPage({
         <div style={{ padding: "clamp(28px,4vw,56px) clamp(16px,5vw,60px) clamp(14px,2vw,28px)", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "baseline", justifyContent: "space-between", transition: TT }}>
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{ width: 24, height: 1, background: C.orange, opacity: 0.6, display: "inline-block", transition: "background 0.45s ease" }} />
-            <span style={{ fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, transition: "color 0.45s ease" }}>Fotografisch Archief</span>
+            <span style={{ fontSize: 14, letterSpacing: "0.28em", textTransform: "uppercase", color: C.inkMuted, transition: "color 0.45s ease" }}>Fotografisch Archief</span>
           </motion.div>
-          <span style={{ fontSize: 9, letterSpacing: "0.16em", color: C.inkMuted, transition: "color 0.45s ease" }}>10 Fragmenten</span>
+          <span style={{ fontSize: 14, letterSpacing: "0.16em", color: C.inkMuted, transition: "color 0.45s ease" }}>10 Fragmenten</span>
         </div>
         <div className="hb-gallery-grid">
-          {GALLERY.map((src, i) => <GalleryItem key={i} src={src} index={i} onClick={() => openLightbox(i)} C={C} />)}
+          {localGallery.map((src, i) => <GalleryItem key={i} src={src} index={i} onClick={() => openLightbox(i)} C={C} />)}
         </div>
       </section>
 
       {/* ── CLOSING ── */}
       <section style={{ padding: "clamp(60px,10vw,120px) clamp(20px,5vw,60px)", borderTop: `1px solid ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", transition: TT }}>
-        <RevealText><div style={{ fontSize: 9, letterSpacing: "0.36em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 40, transition: "color 0.45s ease" }}>Jarne Waterschoot × FOMU × 2025</div></RevealText>
-        <RevealText delay={0.1}><div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, color: C.ink, marginBottom: 8, transition: "color 0.45s ease" }}>Shadow is the</div></RevealText>
-        <RevealText delay={0.2}><div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, WebkitTextStroke: `clamp(0.5px, 0.2vw, 2px) ${C.orange}`, color: "transparent" }}>architect of light</div></RevealText>
+        <RevealText><div style={{ fontSize: 14, letterSpacing: "0.36em", textTransform: "uppercase", color: C.inkMuted, marginBottom: 40, transition: "color 0.45s ease" }}>Jarne Waterschoot × FOMU × 2025</div></RevealText>
+        <RevealText delay={0.1}><div style={{ fontFamily: hFont, fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, color: C.ink, marginBottom: 8, transition: "color 0.45s ease" }}>Shadow is the</div></RevealText>
+        <RevealText delay={0.2}><div style={{ fontFamily: hFont, fontSize: "clamp(36px,6vw,88px)", letterSpacing: "0.04em", lineHeight: 0.9, WebkitTextStroke: `clamp(0.5px, 0.2vw, 2px) ${C.orange}`, color: "transparent" }}>architect of light</div></RevealText>
         <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ duration: 1.2, delay: 0.4, ease: EASE }}
           style={{ width: 1, height: 80, background: `linear-gradient(to bottom, ${C.orange}90, transparent)`, marginTop: 56, transformOrigin: "top", transition: "background 0.45s ease" }} />
       </section>
+
+      <ProjectNav currentHref="/Architectuur" />
 
       {/* ── LIGHTBOX ── */}
       <AnimatePresence>
         {selectedImage && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
-            onClick={() => setSelectedImage(null)}
-            style={{ position: "fixed", inset: 0, zIndex: 9000, background: C.isLight ? "rgba(250,250,248,0.97)" : "rgba(8,8,7,0.97)", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px", cursor: "none", transition: "background 0.45s ease" }}>
+            onClick={() => { setSelectedImage(null); trackLightboxClose('architectuur'); }}
+            style={{ position: "fixed", inset: 0, zIndex: 9000, background: C.isLight ? "rgba(250,250,248,0.97)" : "rgba(8,8,7,0.97)", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px", transition: "background 0.45s ease" }}>
 
-            <button onClick={e => { e.stopPropagation(); const n = (lightboxIndex - 1 + GALLERY.length) % GALLERY.length; setLightboxIndex(n); setSelectedImage(GALLERY[n]); }}
-              style={{ position: "absolute", left: 32, background: "none", border: "none", color: C.inkMuted, fontSize: 28, cursor: "none", padding: 16, transition: "color 0.2s" }}
+            <button onClick={e => { e.stopPropagation(); const n = (lightboxIndex - 1 + localGallery.length) % localGallery.length; setLightboxIndex(n); setSelectedImage(localGallery[n]); trackLightboxNav('prev', String(n)); }}
+              style={{ position: "absolute", left: 32, background: "none", border: "none", color: C.inkMuted, fontSize: 28, padding: 16, transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = C.orange)}
               onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}>←</button>
 
             <motion.img key={selectedImage} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.4, ease: EASE }}
               src={selectedImage} onClick={e => e.stopPropagation()}
-              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", boxShadow: C.isLight ? "0 20px 80px rgba(0,0,0,0.15)" : "0 40px 120px rgba(0,0,0,0.8)", cursor: "none" }}
+              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", boxShadow: C.isLight ? "0 20px 80px rgba(0,0,0,0.15)" : "0 40px 120px rgba(0,0,0,0.8)" }}
               alt="Volledige weergave" />
 
-            <button onClick={e => { e.stopPropagation(); const n = (lightboxIndex + 1) % GALLERY.length; setLightboxIndex(n); setSelectedImage(GALLERY[n]); }}
-              style={{ position: "absolute", right: 32, background: "none", border: "none", color: C.inkMuted, fontSize: 28, cursor: "none", padding: 16, transition: "color 0.2s" }}
+            <button onClick={e => { e.stopPropagation(); const n = (lightboxIndex + 1) % localGallery.length; setLightboxIndex(n); setSelectedImage(localGallery[n]); trackLightboxNav('next', String(n)); }}
+              style={{ position: "absolute", right: 32, background: "none", border: "none", color: C.inkMuted, fontSize: 28, padding: 16, transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = C.orange)}
               onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}>→</button>
 
             <div style={{ position: "absolute", top: 28, right: 32, display: "flex", alignItems: "center", gap: 24 }}>
-              <span style={{ fontSize: 9, letterSpacing: "0.22em", color: C.inkMuted, textTransform: "uppercase", transition: "color 0.45s ease" }}>
-                {String(lightboxIndex + 1).padStart(2, "0")} / {String(GALLERY.length).padStart(2, "0")}
+              <span style={{ fontSize: 14, letterSpacing: "0.22em", color: C.inkMuted, textTransform: "uppercase", transition: "color 0.45s ease" }}>
+                {String(lightboxIndex + 1).padStart(2, "0")} / {String(localGallery.length).padStart(2, "0")}
               </span>
-              <button onClick={() => setSelectedImage(null)}
-                style={{ background: "none", border: `1px solid ${C.orange}40`, color: C.inkMuted, fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase", padding: "8px 16px", cursor: "none", transition: "all 0.25s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.orange; e.currentTarget.style.color = C.orange; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = `${C.orange}40`; e.currentTarget.style.color = C.inkMuted; }}>
+              <button onClick={() => { setSelectedImage(null); trackLightboxClose('architectuur'); }}
+                style={{ background: C.orange, border: "none", color: "#fff", fontSize: 14, letterSpacing: "0.28em", textTransform: "uppercase", padding: "8px 16px", transition: "all 0.25s", cursor: "pointer" }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = "0.82"; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
                 Sluiten [ESC]
               </button>
             </div>
@@ -654,3 +669,6 @@ export default function HeleneBinetPage({
     </div>
   );
 }
+
+
+

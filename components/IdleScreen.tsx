@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import * as d3 from "d3"
+import { trackIdleWake } from "@/lib/analytics"
 
 const IDLE_TIMEOUT = 3 * 60 * 1000
 
@@ -96,6 +97,7 @@ export default function IdleScreen() {
 
   const handleWake = () => {
     setIsIdle(false)
+    trackIdleWake()
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setIsIdle(true), IDLE_TIMEOUT)
   }

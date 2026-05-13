@@ -1,220 +1,181 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { usePathname } from "next/navigation"
+import { trackSurveyToggle } from "@/lib/analytics"
 
 const SURVEY_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfktzkKEzM8ydmEobW6X5Dy5PDIwoidVu8et621vgk1l3CBIw/viewform?usp=publish-editor"
+  "https://docs.google.com/forms/d/e/1FAIpQLSfktzkKEzM8ydmEobW6X5Dy5PDIwoidVu8et621vgk1l3CBIw/viewform?embedded=true"
 
-const LS_KEY = "survey_opened"
+const BLUE = "#1A1AFF"
+const E: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
-// ── THANK YOU MODAL ───────────────────────────────────────────────────────────
-function ThankYouModal({ onClose }: { onClose: () => void }) {
-  // Close on Escape
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [onClose])
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.25 }}
-      onClick={onClose}
-      onTouchEnd={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 99999,
-        background: "rgba(0,0,0,0.65)",
-        backdropFilter: "blur(6px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "24px",
-        pointerEvents: "all",
-        cursor: "default",
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.88, y: 24 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 12 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        onClick={e => e.stopPropagation()}
-        onTouchEnd={e => e.stopPropagation()}
-        style={{
-          background: "#FDFAF7",
-          maxWidth: 440, width: "100%",
-          padding: "48px 40px 40px",
-          position: "relative",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
-        }}
-      >
-        {/* Oranje accentlijn bovenaan */}
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, height: 3,
-          background: "linear-gradient(90deg, #FF5C1A, #FF9A6C)",
-        }} />
-
-        {/* Sluitknop */}
-        <button
-          onClick={onClose}
-          onTouchEnd={onClose}
-          style={{
-            position: "absolute", top: 16, right: 16,
-            background: "none", border: "none", cursor: "pointer",
-            color: "#888", padding: 8, display: "flex",
-            WebkitTapHighlightColor: "transparent",
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-
-        {/* Icoon */}
-        <div style={{
-          width: 56, height: 56, borderRadius: "50%",
-          background: "#FFF0EB", border: "2px solid #FFD5C4",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 24,
-        }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-            stroke="#FF5C1A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-
-        {/* Tekst */}
-        <h2 style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: 24, fontWeight: 700,
-          color: "#1A1816", lineHeight: 1.2, marginBottom: 12,
-        }}>
-          Merci voor je feedback!
-        </h2>
-        <p style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 300,
-          color: "#5A5650", lineHeight: 1.75, marginBottom: 32,
-        }}>
-          Jouw antwoorden helpen mij om dit portfolio verder te verbeteren.
-          Ik waardeer de tijd die je nam — echt bedankt!
-        </p>
-
-        {/* Sluitknop onderaan */}
-        <motion.button
-          onClick={onClose}
-          onTouchEnd={onClose}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          style={{
-            background: "#FF5C1A", color: "#fff", border: "none",
-            padding: "13px 28px", cursor: "pointer",
-            fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700,
-            letterSpacing: "0.04em", width: "100%",
-          }}
-        >
-          Sluit venster
-        </motion.button>
-      </motion.div>
-    </motion.div>
-  )
-}
-
-// ── SURVEY BUTTON ─────────────────────────────────────────────────────────────
+// ── SURVEY PANEL + BUTTON ─────────────────────────────────────────────────────
 export default function SurveyButton() {
-  const [showThankYou, setShowThankYou] = useState(false)
+  const pathname = usePathname()
+  const onContactPage = pathname === "/contact"
+  const [isOpen,   setIsOpen]   = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [overBlue,     setOverBlue]     = useState(false)
+  const [footerOpen,   setFooterOpen]   = useState(false)
+  const [menuOpen,     setMenuOpen]     = useState(false)
 
-  // Detect tab return after survey
   useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && localStorage.getItem(LS_KEY)) {
-        localStorage.removeItem(LS_KEY)
-        setShowThankYou(true)
-      }
-    }
-    document.addEventListener("visibilitychange", handleVisibility)
-    return () => document.removeEventListener("visibilitychange", handleVisibility)
+    const mq = window.matchMedia("(pointer: coarse)")
+    setIsMobile(mq.matches)
+    const h = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener("change", h)
+    return () => mq.removeEventListener("change", h)
   }, [])
 
-  const handleClick = () => {
-    localStorage.setItem(LS_KEY, "1")
-  }
+  useEffect(() => {
+    const h = (e: Event) => setFooterOpen((e as CustomEvent).detail.isOpen)
+    window.addEventListener("footer-change", h)
+    return () => window.removeEventListener("footer-change", h)
+  }, [])
+
+  useEffect(() => {
+    const h = (e: Event) => setMenuOpen((e as CustomEvent).detail.isOpen)
+    window.addEventListener("menu-change", h)
+    return () => window.removeEventListener("menu-change", h)
+  }, [])
+
+  useEffect(() => {
+    const isVisible = (id: string) => {
+      const el = document.getElementById(id)
+      if (!el) return false
+      const r = el.getBoundingClientRect()
+      return r.top < window.innerHeight && r.bottom > 0
+    }
+    const check = () => {
+      setOverBlue(isVisible("contact-section") || isVisible("project-nav-section"))
+    }
+    window.addEventListener("scroll", check, { passive: true })
+    window.addEventListener("resize", check)
+    check()
+    return () => {
+      window.removeEventListener("scroll", check)
+      window.removeEventListener("resize", check)
+    }
+  }, [])
 
   return (
     <>
+      {/* ── Side panel ────────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {showThankYou && <ThankYouModal onClose={() => setShowThankYou(false)} />}
+        {isOpen && (
+          <motion.div
+            key="survey-panel"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 0.42, ease: E }}
+            style={{
+              position: "fixed",
+              top: 0, right: 0, bottom: 0,
+              width: "min(480px, 100vw)",
+              zIndex: 9990,
+              background: "#fff",
+              boxShadow: "-6px 0 48px rgba(0,0,0,0.18)",
+              display: "flex", flexDirection: "column",
+              pointerEvents: "all",
+            }}
+          >
+            {/* Panel header */}
+            <div style={{
+              display: "flex", alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 20px", height: 56,
+              background: BLUE, flexShrink: 0,
+            }}>
+              {/* Left: icon + label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="#fff" strokeWidth="2.2" strokeLinecap="square" strokeLinejoin="miter">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                  <rect x="9" y="3" width="6" height="4" rx="1"/>
+                  <polyline points="9 12 11 14 15 10"/>
+                </svg>
+                <span style={{
+                  fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 600,
+                  letterSpacing: "0.24em", textTransform: "uppercase", color: "#fff",
+                }}>
+                  Enquête
+                </span>
+              </div>
+
+            </div>
+
+            {/* Google Form iframe */}
+            <iframe
+              src={SURVEY_URL}
+              title="Enquête"
+              style={{ flex: 1, border: "none", display: "block" }}
+            />
+          </motion.div>
+        )}
       </AnimatePresence>
 
-      <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9998, pointerEvents: "none" }}>
-
-        {/* Pulsing ring 1 */}
-        <div style={{
-          position: "absolute", inset: -8, borderRadius: 999,
-          border: "2px solid #FF5C1A",
-          animation: "survey-ring 2.4s ease-out infinite",
-          pointerEvents: "none",
-        }} />
-        {/* Pulsing ring 2 (delayed) */}
-        <div style={{
-          position: "absolute", inset: -8, borderRadius: 999,
-          border: "2px solid #FF5C1A",
-          animation: "survey-ring 2.4s ease-out infinite 1.2s",
-          pointerEvents: "none",
-        }} />
-
-        <motion.a
-          href={SURVEY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleClick}
-          whileHover={{ scale: 1.07 }}
-          whileTap={{ scale: 0.95 }}
+      {/* ── Floating toggle button ─────────────────────────────────────────── */}
+      <div style={{
+        position: "fixed", bottom: 28, right: 28,
+        zIndex: 9995, pointerEvents: "none",
+      }}>
+  
+        <motion.button
+          onClick={() => { const next = !isOpen; setIsOpen(next); trackSurveyToggle(next ? 'open' : 'close') }}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
           style={{
             pointerEvents: "all",
             position: "relative",
-            display: "flex", alignItems: "center", gap: 10,
-            background: "#FF5C1A",
-            color: "#fff",
-            padding: "13px 22px",
-            borderRadius: 999,
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 13, fontWeight: 700,
-            textDecoration: "none",
-            letterSpacing: "0.02em",
-            boxShadow: "0 4px 28px rgba(255,92,26,0.5), 0 1px 6px rgba(0,0,0,0.25)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            gap: isMobile ? 0 : 10,
+            background: (overBlue || onContactPage) && !footerOpen && !menuOpen ? "#fff" : BLUE,
+            color: (overBlue || onContactPage) && !footerOpen && !menuOpen ? BLUE : "#fff",
+            width:  isMobile ? 56 : "auto",
+            height: isMobile ? 56 : "auto",
+            padding: isMobile ? 0 : "13px 22px",
+            borderRadius: isMobile ? 14 : 4,
+            border: "none", cursor: "pointer",
+            fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 600,
+            letterSpacing: "0.24em", textTransform: "uppercase",
+            boxShadow: (overBlue || onContactPage) && !footerOpen && !menuOpen
+              ? "0 4px 28px rgba(255,255,255,0.3), 0 1px 6px rgba(0,0,0,0.12)"
+              : "0 4px 28px rgba(26,26,255,0.38), 0 1px 6px rgba(0,0,0,0.18)",
             whiteSpace: "nowrap",
+            WebkitTapHighlightColor: "transparent",
+            transition: "background 0.3s, color 0.3s, box-shadow 0.3s",
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-            <rect x="9" y="3" width="6" height="4" rx="1"/>
-            <polyline points="9 12 11 14 15 10"/>
-          </svg>
-          <span className="hidden sm:inline">Vul enquête in</span>
-          <span style={{
-            position: "absolute", top: -4, right: -4,
-            width: 12, height: 12, borderRadius: "50%",
-            background: "#fff", border: "2px solid #FF5C1A",
-            animation: "survey-dot 1.8s ease-in-out infinite",
-          }} />
-        </motion.a>
-
-        <style>{`
-          @keyframes survey-ring {
-            0%   { transform: scale(1);   opacity: 0.7; }
-            100% { transform: scale(1.6); opacity: 0;   }
-          }
-          @keyframes survey-dot {
-            0%, 100% { transform: scale(1);    background: #fff; }
-            50%       { transform: scale(1.25); background: #ffe0d4; }
-          }
-        `}</style>
+          {isOpen ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          ) : (
+            <>
+              <svg width={isMobile ? 20 : 14} height={isMobile ? 20 : 14} viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" strokeLinejoin="miter">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+                <polyline points="9 12 11 14 15 10"/>
+              </svg>
+              <span className="survey-label">Enquête</span>
+            </>
+          )}
+        </motion.button>
       </div>
+
+      <style>{`
+        @media (max-width: 767px) {
+          .survey-label { display: none }
+        }
+      `}</style>
     </>
   )
 }
+
+

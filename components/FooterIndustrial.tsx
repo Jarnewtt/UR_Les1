@@ -2,228 +2,213 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import { FiInstagram, FiMail } from "react-icons/fi"
+import { trackSocialClick, trackFooterLinkClick } from "@/lib/analytics"
 
-// ── DESIGN TOKENS ─────────────────────────────────────────────────────────────
 type Theme = {
-  bg: string; ink: string; orange: string
-  greyLt: string; mid: string; grey: string; isLight: boolean
+  bg: string; surface: string; ink: string; inkSub: string
+  inkMuted: string; blue: string; border: string; isLight: boolean
 }
 
-const DARK: Theme = {
-  bg: "#1E1C1A", ink: "#F2F0EC", orange: "#FF5C1A",
-  greyLt: "#2A2A28", mid: "#888884", grey: "#4A4A48", isLight: false,
-}
-const LIGHT: Theme = {
-  bg: "#0A0A0A", ink: "#F2F0EC", orange: "#FF5C1A",
-  greyLt: "#2A2A28", mid: "#888884", grey: "#4A4A48", isLight: false,
-}
+const DARK: Theme  = { bg:"#080808", surface:"#111111", ink:"#F0EDF0", inkSub:"#AEAEAE", inkMuted:"#545454", blue:"#1A1AFF", border:"#1E1E1E", isLight:false }
+const LIGHT: Theme = { bg:"#F5F4F0", surface:"#ECEAE6", ink:"#0A0A0A", inkSub:"#3A3A36", inkMuted:"#888884", blue:"#1A1AFF", border:"#D4D4D0", isLight:true  }
 
-function useIndustrialTheme(): Theme {
-  const [isDark, setIsDark] = useState(true)
+function useTheme(): Theme {
+  const [isDark, setIsDark] = useState(false)
   useEffect(() => {
-    setIsDark(!document.documentElement.classList.contains("theme-light"))
-    const handler = (e: Event) => setIsDark((e as CustomEvent).detail.isDark)
-    window.addEventListener("theme-change", handler)
-    return () => window.removeEventListener("theme-change", handler)
+    setIsDark(document.documentElement.classList.contains("theme-dark"))
+    const h = (e: Event) => setIsDark((e as CustomEvent).detail.isDark)
+    window.addEventListener("theme-change", h)
+    return () => window.removeEventListener("theme-change", h)
   }, [])
   return isDark ? DARK : LIGHT
 }
 
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
-
 const FOOTER_LINKS = [
-  { name: "Gebruiksvoorwaarden",  href: "/terms-of-agreement" },
-  { name: "Auteursrecht",         href: "/copyright-regulations" },
-  { name: "Cookie-instellingen",  href: "/cookie-settings" },
+  { name: "Gebruiksvoorwaarden", href: "/terms-of-agreement"    },
+  { name: "Auteursrecht",        href: "/copyright-regulations" },
+  { name: "Cookie-instellingen", href: "/cookie-settings"       },
 ]
 
 const SOCIAL_LINKS = [
-  { label: "Instagram", href: "https://www.instagram.com/jarne_wtt/" },
+  { label: "Instagram", href: "https://www.instagram.com/jarne_wtt/", icon: "instagram" },
+  { label: "jarnewaterschoot@hotmail.com", href: "mailto:jarnewaterschoot@hotmail.com", icon: "mail" },
 ]
 
-function GlitchWord({ text, T }: { text: string; T: Theme }) {
-  const [glitch, setGlitch] = useState(false)
-  useEffect(() => {
-    const iv = setInterval(() => {
-      if (Math.random() > 0.92) {
-        setGlitch(true)
-        setTimeout(() => setGlitch(false), 80 + Math.random() * 80)
-      }
-    }, 2500)
-    return () => clearInterval(iv)
-  }, [])
-  return (
-    <span style={{
-      color: glitch ? T.orange : T.ink,
-      textShadow: glitch ? `2px 0 ${T.orange}, -2px 0 #00ffff` : "none",
-      transition: "color 0.05s, text-shadow 0.05s",
-    }}>
-      {text}
-    </span>
-  )
-}
+interface FooterProps { accentColor?: string; onClose?: () => void }
 
-interface FooterProps { accentColor?: string }
-
-export default function Footer({ accentColor: customColor }: FooterProps) {
-  const T = useIndustrialTheme()
-  const currentYear = new Date().getFullYear()
-  const pathname = usePathname()
-  const TT = "background 0.45s ease, color 0.45s ease, border-color 0.45s ease"
-
-  let glowColor = customColor || T.orange
-  if (pathname?.includes("CineCity"))  glowColor = "#a855f7"
-  if (pathname?.includes("Chocolate")) glowColor = "#f97316"
+export default function FooterIndustrial({ accentColor: _accentColor, onClose }: FooterProps) {
+  const C = useTheme()
+  const router = useRouter()
+  const year = new Date().getFullYear()
+  const T = "background 0.4s, color 0.4s, border-color 0.4s"
 
   return (
     <footer style={{
-      position: "relative",
-      background: T.bg,
-      color: T.ink,
-      fontFamily: "'DM Mono', monospace",
-      overflow: "hidden",
-      transition: TT,
+      background: C.bg, color: C.ink,
+      fontFamily: "Inter, system-ui, sans-serif",
+      borderTop: `1px solid ${C.border}`,
+      position: "relative", overflow: "hidden",
+      transition: T,
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap');
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        .blink { animation: blink 1.2s step-end infinite; }
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+        @keyframes avail-pulse {
+          0%, 100% { opacity:1; transform:scale(1); }
+          50%       { opacity:0.35; transform:scale(1.7); }
+        }
+        .footer-avail-dot { animation: avail-pulse 2.4s ease-in-out infinite; }
+        .footer-link { transition: color 0.22s; }
+        .footer-link:hover { color: var(--f-blue) !important; }
       `}</style>
 
-      {/* Ambient glow */}
+      {/* Top cobalt accent line — mirrors the hero */}
       <div style={{
-        position: "absolute", bottom: 0, right: 0,
-        width: 280, height: 280, borderRadius: "50%",
-        background: `radial-gradient(circle, ${glowColor}18 0%, transparent 70%)`,
-        pointerEvents: "none", transition: "background 0.7s",
+        position: "absolute", top: 0, left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, ${C.blue}, ${C.blue}55 60%, transparent)`,
       }} />
 
-      {/* Metallic sheen */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: 1,
-        background: `linear-gradient(90deg, ${T.orange}, ${T.orange}44 60%, transparent 100%)`,
-      }} />
+      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 clamp(24px,5vw,72px)" }}>
 
-      {/* Left vertical bar */}
-      <div style={{
-        position: "absolute", left: 0, top: 0, bottom: 0, width: 2,
-        background: `linear-gradient(to bottom, ${T.orange}44, transparent 60%)`,
-      }} />
+        {/* ── MAIN ROW ────────────────────────────────────────────────────── */}
+        <div style={{
+          display: "flex", alignItems: "flex-end",
+          justifyContent: "space-between", flexWrap: "wrap",
+          gap: "32px 48px",
+          padding: "52px 0 40px",
+          borderBottom: `1px solid ${C.border}`,
+          transition: T,
+        }}>
 
-      <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 clamp(20px, 5vw, 60px)" }}>
-
-        {/* ── MAIN ROW ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, ease: EASE }}
-          style={{
-            display: "flex", alignItems: "center",
-            justifyContent: "space-between", flexWrap: "wrap", gap: "16px 40px",
-            padding: "28px 0 24px",
-            borderBottom: `1px solid ${T.greyLt}`,
-            transition: TT,
-          }}
-        >
-          {/* Name */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 20 }}>
-            <div>
-              <div style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(36px, 5vw, 64px)",
-                letterSpacing: "0.06em", lineHeight: 1,
-              }}>
-                <GlitchWord text="JARNE" T={T} />
-              </div>
-              <div style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(20px, 2.8vw, 36px)",
-                letterSpacing: "0.1em",
-                WebkitTextStroke: `clamp(0.3px, 0.1vw, 1px) ${T.mid}`,
-                color: "transparent",
-                transition: TT,
-              }}>
-                WATERSCHOOT
-              </div>
-            </div>
-          </div>
-
-          {/* Socials */}
-          <div style={{ display: "flex", alignItems: "center", gap: 32, flexShrink: 0 }}>
+          {/* Name block — identical treatment to hero */}
+          <div>
             <div style={{
-              fontSize: 9, letterSpacing: "0.28em", textTransform: "uppercase",
-              color: T.orange, display: "flex", alignItems: "center", gap: 8,
-              transition: "color 0.45s ease",
+              fontFamily: "'Anton', Impact, sans-serif",
+              fontSize: "clamp(36px, 6vw, 72px)",
+              textTransform: "uppercase", lineHeight: 0.9,
+              letterSpacing: "0.01em", color: C.ink, transition: "color 0.4s",
             }}>
-              <span style={{ width: 12, height: 1, background: T.orange, display: "inline-block", transition: "background 0.45s ease" }} />
-              Socials
+              JARNE
             </div>
-            {SOCIAL_LINKS.map((s, i) => (
-              <Link
-                key={s.label}
-                href={s.href}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 7,
-                  textDecoration: "none",
-                  fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-                  color: T.mid, transition: "color 0.2s",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = T.ink)}
-                onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
-              >
-                <span style={{ fontSize: 8, color: T.orange, opacity: 0.6 }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                {s.label}
-                <span style={{ opacity: 0.3, fontSize: 11 }}>↗</span>
-              </Link>
-            ))}
-          </div>
-        </motion.div>
+            <div style={{
+              fontFamily: "'Anton', Impact, sans-serif",
+              fontSize: "clamp(20px, 3.4vw, 40px)",
+              textTransform: "uppercase", lineHeight: 1,
+              letterSpacing: "0.02em",
+              color: C.blue,
+            }}>
+              WATERSCHOOT
+            </div>
 
-        {/* ── BOTTOM BAR ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          style={{
-            display: "flex", alignItems: "center",
-            justifyContent: "space-between", gap: 24,
-            flexWrap: "wrap",
-            padding: "16px 0 24px",
-          }}
-        >
-          <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
-            {FOOTER_LINKS.map((link) => (
-              <Link
+            {/* Availability */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              marginTop: 18,
+            }}>
+              <motion.span
+                animate={{ scale: [1, 1.7, 1], opacity: [1, 0.35, 1] }}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                style={{ width: 5, height: 5, borderRadius: "50%", background: C.blue, display: "inline-block", flexShrink: 0 }}
+              />
+              <span style={{
+                fontFamily: "Inter, sans-serif", fontSize: 14,
+                letterSpacing: "0.28em", textTransform: "uppercase", color: C.blue,
+              }}>
+                Beschikbaar voor projecten
+              </span>
+            </div>
+          </div>
+
+          {/* Right column — tagline + socials */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 28, alignItems: "flex-start" }}>
+
+            {/* Tagline */}
+            <p style={{
+              fontFamily: "Inter, sans-serif", fontStyle: "italic", fontWeight: 300,
+              fontSize: "clamp(16px,1.4vw,20px)", lineHeight: 1.8,
+              color: C.inkSub, maxWidth: "30ch", margin: 0, transition: "color 0.4s",
+            }}>
+              Tastbare visuele verhalen.<br />
+              Strategie en esthetiek voor merken die durven opvallen.
+            </p>
+
+            {/* Social links */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{
+                fontSize: 14, letterSpacing: "0.32em", textTransform: "uppercase",
+                color: C.inkMuted, display: "flex", alignItems: "center", gap: 10,
+                transition: "color 0.4s",
+              }}>
+                <span style={{ width: 20, height: 1, background: C.blue, display: "inline-block", flexShrink: 0 }} />
+                Socials
+              </div>
+              {SOCIAL_LINKS.map(s => (
+                <Link
+                  key={s.label}
+                  href={s.href}
+                  target={s.icon === "instagram" ? "_blank" : undefined}
+                  rel={s.icon === "instagram" ? "noopener noreferrer" : undefined}
+                  onClick={() => trackSocialClick(s.icon === "instagram" ? "instagram" : "email", "footer")}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 10,
+                    textDecoration: "none",
+                    fontFamily: "Inter, sans-serif", fontSize: 14,
+                    letterSpacing: "0.1em",
+                    color: C.blue, transition: "opacity 0.22s",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.opacity = "0.7")}
+                  onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+                >
+                  {s.icon === "instagram" ? <FiInstagram size={16} /> : <FiMail size={16} />}
+                  {s.label}
+                </Link>
+              ))}
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── BOTTOM BAR ────────────────────────────────────────────────── */}
+        <div style={{
+          display: "flex", alignItems: "center",
+          justifyContent: "space-between", flexWrap: "wrap",
+          gap: 16, padding: "16px 0 24px",
+        }}>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            {FOOTER_LINKS.map(link => (
+              <button
                 key={link.name}
-                href={link.href}
-                style={{
-                  textDecoration: "none",
-                  fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase",
-                  color: T.grey, transition: "color 0.2s",
+                onClick={() => {
+                  trackFooterLinkClick(link.name)
+                  onClose?.()
+                  router.push(link.href)
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = T.mid)}
-                onMouseLeave={e => (e.currentTarget.style.color = T.grey)}
+                style={{
+                  background: "none", border: "none", padding: 0, cursor: "pointer",
+                  fontFamily: "Inter, sans-serif", fontSize: 14,
+                  letterSpacing: "0.2em", textTransform: "uppercase",
+                  color: C.inkMuted, transition: "color 0.22s",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = C.blue)}
+                onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}
               >
                 {link.name}
-              </Link>
+              </button>
             ))}
           </div>
 
           <div style={{
-            display: "flex", alignItems: "center", gap: 12,
-            fontSize: 9, letterSpacing: "0.24em", textTransform: "uppercase",
-            color: T.grey, transition: "color 0.45s ease",
+            display: "flex", alignItems: "center", gap: 10,
+            fontFamily: "Inter, sans-serif", fontSize: 14,
+            letterSpacing: "0.24em", textTransform: "uppercase",
+            color: C.inkMuted, transition: "color 0.4s",
           }}>
-            <span style={{ width: 16, height: 1, background: T.greyLt, display: "inline-block", transition: "background 0.45s ease" }} />
-            © {currentYear} Jarne Waterschoot — België
+            <span style={{ width: 16, height: 1, background: C.border, display: "inline-block", transition: "background 0.4s" }} />
+            © {year} Jarne Waterschoot — België
           </div>
-        </motion.div>
+        </div>
 
       </div>
     </footer>

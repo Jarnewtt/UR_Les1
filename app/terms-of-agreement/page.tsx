@@ -1,10 +1,15 @@
-"use client"
-
-import { useStyle } from "@/components/useStyle"
-import { AnimatePresence, motion } from "framer-motion"
-import LegalPageModern    from "@/components/LegalPageModern"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 import LegalPageIndustrial from "@/components/LegalPageIndustrial"
-import type { LegalSection } from "@/components/LegalPageModern"
+
+export const metadata: Metadata = {
+  title: "Gebruiksvoorwaarden",
+  description:
+    "Gebruiksvoorwaarden van het portfolio van Jarne Waterschoot. Lees de regels voor toegestaan gebruik en intellectueel eigendom.",
+  robots: { index: false, follow: false },
+}
+
+type LegalSection = { heading: string; body: ReactNode }
 
 const UPDATED = "April 2025"
 
@@ -72,33 +77,12 @@ const sections: LegalSection[] = [
 ]
 
 export default function TermsPage() {
-  const { style } = useStyle()
-
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {style === "industrial" ? (
-          <LegalPageIndustrial
-            code="Doc — 01 / Juridisch"
-            title="Gebruiksvoorwaarden"
-            updated={UPDATED}
-            sections={sections}
-          />
-        ) : (
-          <LegalPageModern
-            number="Juridisch — 01"
-            title="Gebruiksvoorwaarden"
-            updated={UPDATED}
-            sections={sections}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+    <LegalPageIndustrial
+      code="Doc — 01 / Juridisch"
+      title="Gebruiksvoorwaarden"
+      updated={UPDATED}
+      sections={sections}
+    />
   )
 }

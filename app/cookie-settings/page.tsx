@@ -1,10 +1,15 @@
-"use client"
-
-import { useStyle } from "@/components/useStyle"
-import { AnimatePresence, motion } from "framer-motion"
-import LegalPageModern    from "@/components/LegalPageModern"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 import LegalPageIndustrial from "@/components/LegalPageIndustrial"
-import type { LegalSection } from "@/components/LegalPageModern"
+
+export const metadata: Metadata = {
+  title: "Cookie-instellingen",
+  description:
+    "Informatie over het cookiebeleid van Jarne Waterschoot. Lees hoe analytische en functionele cookies worden gebruikt op dit portfolio.",
+  robots: { index: false, follow: false },
+}
+
+type LegalSection = { heading: string; body: ReactNode }
 
 const UPDATED = "April 2025"
 
@@ -41,9 +46,8 @@ const sections: LegalSection[] = [
     heading: "Functionele cookies",
     body: (
       <p>
-        Naast analytische cookies gebruikt deze website functionele cookies om uw
-        voorkeuren te onthouden, zoals de gekozen visuele stijl (industrieel of modern)
-        en het kleurthema (donker of licht). Deze cookies zijn strikt noodzakelijk
+        Deze website gebruikt functionele cookies om uw voorkeuren te onthouden,
+        zoals het kleurthema (donker of licht). Deze cookies zijn strikt noodzakelijk
         voor de correcte werking van de website en worden niet gebruikt voor
         marketingdoeleinden.
       </p>
@@ -79,33 +83,12 @@ const sections: LegalSection[] = [
 ]
 
 export default function CookiesPage() {
-  const { style } = useStyle()
-
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {style === "industrial" ? (
-          <LegalPageIndustrial
-            code="Doc — 03 / Privacy"
-            title="Cookie-instellingen"
-            updated={UPDATED}
-            sections={sections}
-          />
-        ) : (
-          <LegalPageModern
-            number="Privacy — 03"
-            title="Cookie-instellingen"
-            updated={UPDATED}
-            sections={sections}
-          />
-        )}
-      </motion.div>
-    </AnimatePresence>
+    <LegalPageIndustrial
+      code="Doc — 03 / Privacy"
+      title="Cookie-instellingen"
+      updated={UPDATED}
+      sections={sections}
+    />
   )
 }

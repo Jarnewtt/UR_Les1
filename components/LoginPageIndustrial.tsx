@@ -1,8 +1,9 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { trackTabSwitch, trackFormSubmit, trackPasswordToggle } from "@/lib/analytics"
 
 // ── DESIGN TOKENS ─────────────────────────────────────────────────────────────
 type Theme = {
@@ -10,8 +11,8 @@ type Theme = {
   inkMuted: string; orange: string; border: string; isLight: boolean
 }
 
-const DARK: Theme  = { bg:"#080807", surface:"#111110", ink:"#F0EDE8", inkSub:"#C8C4BE", inkMuted:"#888480", orange:"#FF5C1A", border:"#262420", isLight:false }
-const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", inkMuted:"#4E4A46", orange:"#E84000", border:"#DDD8D0", isLight:true  }
+const DARK: Theme  = { bg:"#080807", surface:"#111110", ink:"#F0EDE8", inkSub:"#C8C4BE", inkMuted:"#888480", orange:"#1A1AFF", border:"#262420", isLight:false }
+const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", inkMuted:"#4E4A46", orange:"#1A1AFF", border:"#DDD8D0", isLight:true  }
 
 const E: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
@@ -64,13 +65,13 @@ function PasswordInput({ C, ...rest }: { C: Theme; [key: string]: any }) {
           width: "100%", background: "transparent", border: "none",
           borderBottom: `1px solid ${focused ? C.orange : C.border}`,
           padding: "12px 32px 12px 0",
-          color: C.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 300,
+          color: C.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 300,
           outline: "none", transition: "border-color 0.25s",
         }}
       />
       <motion.button
         type="button"
-        onClick={() => setShow(s => !s)}
+        onClick={() => { const next = !show; setShow(next); trackPasswordToggle(next) }}
         whileTap={{ scale: 0.85 }}
         style={{
           position: "absolute", right: 0, top: 0, bottom: 0, margin: "auto 0",
@@ -100,7 +101,7 @@ function VerticalDecor({ C }: { C: Theme }) {
           transition={{ delay:0.5, duration:0.8, ease:E }}
           style={{
             fontFamily:"'Bebas Neue',sans-serif",
-            fontSize: 13,
+            fontSize: 16,
             letterSpacing: "0.55em",
             color: C.ink,
             opacity: 0.10,
@@ -119,7 +120,7 @@ function VerticalDecor({ C }: { C: Theme }) {
           transition={{ delay:0.9, duration:0.8, ease:E }}
           style={{
             fontFamily:"'DM Mono',monospace",
-            fontSize: 9,
+            fontSize: 16,
             letterSpacing: "0.55em",
             color: C.orange,
             opacity: 0.18,
@@ -139,11 +140,13 @@ export default function LoginPage() {
   const C = useTheme()
   const [loading, setLoading]   = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [activeTab, setActiveTab] = useState('login')
 
   useEffect(() => { setIsLoaded(true) }, [])
 
   const mockSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    trackFormSubmit(activeTab, '/login')
     setLoading(true)
     await new Promise(r => setTimeout(r, 1200))
     setLoading(false)
@@ -152,33 +155,35 @@ export default function LoginPage() {
   const HERO = "TOEGANG".split("")
 
   const labelStyle: React.CSSProperties = {
-    fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.28em",
+    fontFamily:"'DM Mono',monospace", fontSize: 16, letterSpacing:"0.28em",
     textTransform:"uppercase", color:C.inkMuted, display:"block", marginBottom:10,
   }
 
   const submitBtnStyle: React.CSSProperties = {
-    marginTop:4, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:14,
-    border:`1.5px solid ${C.orange}`, backgroundColor:C.orange, color:"#fff",
-    fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.3em",
-    textTransform:"uppercase", padding:"16px 32px", cursor:"pointer", transition:"all 0.28s",
+    marginTop: 4, display: "flex", width: "100%",
+    alignItems: "center", justifyContent: "center", gap: 14,
+    border: `1.5px solid ${C.orange}`, backgroundColor: C.orange, color: "#fff",
+    fontFamily: "'DM Mono',monospace", fontSize: 16, letterSpacing: "0.3em",
+    textTransform: "uppercase", padding: "16px clamp(16px,4vw,32px)",
+    cursor: "pointer", transition: "all 0.28s", minHeight: 52,
   }
 
   return (
     <div style={{
-      background: C.bg, minHeight:"100vh", color:C.ink,
+      background: C.bg, height:"100svh", color:C.ink,
       fontFamily:"'DM Mono',monospace", transition:"background 0.5s, color 0.5s",
       display:"flex", alignItems:"center", justifyContent:"center",
-      overflow:"hidden", position:"relative",
+      overflowY:"auto", position:"relative",
     }}>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
-        ::selection { background:#FF5C1A; color:#fff }
+        ::selection { background:#1A1AFF; color:#fff }
         ::-webkit-scrollbar { width:2px }
-        ::-webkit-scrollbar-thumb { background:#FF5C1A }
+        ::-webkit-scrollbar-thumb { background:#1A1AFF }
         body { cursor:auto }
-        @media (hover:hover) and (pointer:fine) { body { cursor:none !important } }
+        
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         .blink { animation:blink 1.1s step-end infinite }
 
@@ -186,14 +191,14 @@ export default function LoginPage() {
           width:100%; background:transparent; border:none;
           border-bottom:1px solid ${C.border};
           padding:12px 0; color:${C.ink};
-          font-family:'DM Sans',sans-serif; font-size:15px; font-weight:300;
+          font-family:'DM Sans',sans-serif; font-size: 16px; font-weight:300;
           outline:none; transition:border-color 0.25s;
         }
         .login-input:focus { border-bottom-color:${C.orange}; }
-        .login-input::placeholder { color:${C.inkMuted}; font-size:13px; }
+        .login-input::placeholder { color:${C.inkMuted}; font-size: 16px; }
 
         .tab-trigger {
-          font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.28em;
+          font-family:'DM Mono',monospace; font-size: 16px; letter-spacing:0.28em;
           text-transform:uppercase; padding:12px 16px; cursor:pointer;
           transition:all 0.25s; border:1px solid transparent;
           background:transparent; color:${C.inkMuted}; flex:1;
@@ -202,6 +207,10 @@ export default function LoginPage() {
           color:${C.orange}; border-color:${C.border}; background:${C.surface};
         }
         .tab-trigger:hover:not([data-state="active"]) { color:${C.inkSub}; }
+        @media (max-width: 480px) {
+          .tab-trigger { padding: 10px 4px; letter-spacing: 0.04em; font-size: 11px; }
+          .login-input { font-size: 16px; min-height: 48px; }
+        }
       `}</style>
 
       {/* Grain */}
@@ -232,7 +241,7 @@ export default function LoginPage() {
       >
 
         {/* HEADER */}
-        <div style={{ marginBottom:44, textAlign:"center" }}>
+        <div style={{ marginBottom:"clamp(12px,3vh,36px)", textAlign:"center" }}>
           <motion.div
             initial={{ scaleX:0 }} animate={{ scaleX:1 }}
             transition={{ delay:0.5, duration:0.8, ease:E }}
@@ -240,7 +249,7 @@ export default function LoginPage() {
           />
 
           <div style={{ overflow:"hidden", display:"flex", justifyContent:"center", lineHeight:0.86 }}>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:64, lineHeight:0.86, display:"flex" }}>
+            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(36px,10vw,64px)", lineHeight:0.86, display:"flex" }}>
               {isLoaded && HERO.map((ch, i) => (
                 <motion.span key={i}
                   initial={{ y:"105%" }} animate={{ y:0 }}
@@ -256,7 +265,7 @@ export default function LoginPage() {
             <motion.div
               initial={{ y:"100%" }} animate={isLoaded ? { y:0 } : {}}
               transition={{ delay:0.85, duration:0.75, ease:E }}
-              style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, lineHeight:0.9, color:"transparent", WebkitTextStroke:`clamp(0.3px, 0.1vw, 1px) ${C.inkMuted}` }}>
+              style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(18px,6vw,28px)", lineHeight:0.9, color:"transparent", WebkitTextStroke:`clamp(0.3px, 0.1vw, 1px) ${C.inkMuted}` }}>
               PORTAAL
             </motion.div>
           </div>
@@ -264,7 +273,7 @@ export default function LoginPage() {
           <motion.p
             initial={{ opacity:0 }} animate={isLoaded ? { opacity:1 } : {}}
             transition={{ delay:1.3, duration:0.6 }}
-            style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:C.inkMuted, marginTop:14, letterSpacing:"0.3em", textTransform:"uppercase" }}>
+            style={{ fontFamily:"'DM Mono',monospace", fontSize: 16, color:C.inkMuted, marginTop:14, letterSpacing:"0.3em", textTransform:"uppercase" }}>
             Waterschoot — Design 25/26
           </motion.p>
 
@@ -273,7 +282,7 @@ export default function LoginPage() {
             transition={{ delay:1.5, duration:0.6 }}
             style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, marginTop:10 }}>
             <span className="blink" style={{ width:6, height:6, borderRadius:"50%", background:C.orange, display:"inline-block", boxShadow:`0 0 8px ${C.orange}` }}/>
-            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:8, letterSpacing:"0.22em", textTransform:"uppercase", color:C.orange }}>
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize: 16, letterSpacing:"0.22em", textTransform:"uppercase", color:C.orange }}>
               Beveiligde Toegang
             </span>
           </motion.div>
@@ -284,7 +293,7 @@ export default function LoginPage() {
           initial={{ opacity:0, y:16 }} animate={isLoaded ? { opacity:1, y:0 } : {}}
           transition={{ delay:0.6, duration:0.7, ease:E }}>
 
-          <Tabs defaultValue="login" style={{ width:"100%" }}>
+          <Tabs defaultValue="login" style={{ width:"100%" }} onValueChange={(v) => { setActiveTab(v); trackTabSwitch(v, '/login') }}>
             <TabsList style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:4, background:"none", marginBottom:20, padding:0 }}>
               <TabsTrigger value="login"  className="tab-trigger">Aanmelden</TabsTrigger>
               <TabsTrigger value="join"   className="tab-trigger">Registreren</TabsTrigger>
@@ -294,7 +303,7 @@ export default function LoginPage() {
             <div style={{
               background: C.surface,
               border:`1px solid ${C.border}`,
-              padding:"36px 32px", position:"relative",
+              padding:"clamp(24px,5vw,36px) clamp(16px,5vw,32px)", position:"relative",
             }}>
               <div style={{ position:"absolute", top:0,  right:0, width:20, height:20, borderTop:`2px solid ${C.orange}`, borderRight:`2px solid ${C.orange}` }}/>
               <div style={{ position:"absolute", bottom:0, left:0,  width:20, height:20, borderBottom:`2px solid ${C.orange}`, borderLeft:`2px solid ${C.orange}` }}/>
@@ -306,7 +315,7 @@ export default function LoginPage() {
                   <motion.form key="login-form" onSubmit={mockSubmit}
                     initial={{ opacity:0, x:-12 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:12 }}
                     transition={{ duration:0.35, ease:E }}
-                    style={{ display:"flex", flexDirection:"column", gap:28 }}>
+                    style={{ display:"flex", flexDirection:"column", gap:"clamp(14px,2.5vh,28px)" }}>
 
                     <div>
                       <label style={labelStyle}>E-mailadres</label>
@@ -335,7 +344,7 @@ export default function LoginPage() {
                   <motion.form key="join-form" onSubmit={mockSubmit}
                     initial={{ opacity:0, x:12 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-12 }}
                     transition={{ duration:0.35, ease:E }}
-                    style={{ display:"flex", flexDirection:"column", gap:28 }}>
+                    style={{ display:"flex", flexDirection:"column", gap:"clamp(14px,2.5vh,28px)" }}>
 
                     <div>
                       <label style={labelStyle}>E-mailadres</label>
@@ -370,11 +379,11 @@ export default function LoginPage() {
                   <motion.form key="herstel-form" onSubmit={mockSubmit}
                     initial={{ opacity:0, x:12 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-12 }}
                     transition={{ duration:0.35, ease:E }}
-                    style={{ display:"flex", flexDirection:"column", gap:28 }}>
+                    style={{ display:"flex", flexDirection:"column", gap:"clamp(14px,2.5vh,28px)" }}>
 
                     <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
                       <div style={{ width:2, flexShrink:0, alignSelf:"stretch", background:`linear-gradient(to bottom, ${C.orange}, transparent)`, marginTop:2 }}/>
-                      <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:13, lineHeight:1.8, color:C.inkMuted }}>
+                      <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize: 16, lineHeight:1.8, color:C.inkMuted }}>
                         Voer je e-mailadres in om een herstelkoppeling te ontvangen voor een nieuw wachtwoord.
                       </p>
                     </div>
@@ -388,10 +397,12 @@ export default function LoginPage() {
                       whileHover={{ backgroundColor:`${C.orange}18`, scale:1.02 }}
                       whileTap={{ scale:0.97 }}
                       style={{
-                        marginTop:4, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:14,
-                        border:`1.5px solid ${C.orange}`, backgroundColor:"transparent", color:C.orange,
-                        fontFamily:"'DM Mono',monospace", fontSize:9, letterSpacing:"0.3em",
-                        textTransform:"uppercase", padding:"16px 32px", cursor:"pointer", transition:"all 0.28s",
+                        marginTop: 4, display: "flex", width: "100%",
+                        alignItems: "center", justifyContent: "center", gap: 14,
+                        border: `1.5px solid ${C.orange}`, backgroundColor: "transparent", color: C.orange,
+                        fontFamily: "'DM Mono',monospace", fontSize: 16, letterSpacing: "0.3em",
+                        textTransform: "uppercase", padding: "16px clamp(16px,4vw,32px)",
+                        cursor: "pointer", transition: "all 0.28s", minHeight: 52,
                       }}>
                       {loading ? (
                         <motion.span animate={{ rotate:360 }} transition={{ duration:0.9, repeat:Infinity, ease:"linear" }}
@@ -412,8 +423,8 @@ export default function LoginPage() {
         <motion.div
           initial={{ opacity:0 }} animate={isLoaded ? { opacity:1 } : {}}
           transition={{ delay:1.6, duration:0.6 }}
-          style={{ marginTop:28, textAlign:"center" }}>
-          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, color:C.inkMuted, letterSpacing:"0.2em", textTransform:"uppercase" }}>
+          style={{ marginTop:"clamp(12px,2vh,28px)", textAlign:"center" }}>
+          <span style={{ fontFamily:"'DM Mono',monospace", fontSize: 16, color:C.inkMuted, letterSpacing:"0.2em", textTransform:"uppercase" }}>
             Waterschoot — Design 25/26
           </span>
         </motion.div>
@@ -422,3 +433,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

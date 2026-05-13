@@ -1,21 +1,24 @@
-"use client";
-import { useStyle } from "@/components/useStyle";
-import { AnimatePresence, motion } from "framer-motion";
-import ChocolatePageIndustrial from "@/components/ChocolatePageIndustrial";
-import ChocolatePageModern from "@/components/ChocolatePageModern";
+import type { Metadata } from "next"
+import ChocolatePageIndustrial from "@/components/ChocolatePageIndustrial"
+
+export const metadata: Metadata = {
+  title: "Chocolate",
+  description:
+    "Chocolade verpakkingsontwerp — een project van Jarne Waterschoot. Premium productidentiteit, materiaalonderzoek en grafische uitwerking voor een chocolademerk.",
+  openGraph: {
+    title: "Chocolate — Jarne Waterschoot",
+    description:
+      "Premium chocolade verpakkingsontwerp door Jarne Waterschoot. Productidentiteit, materiaalonderzoek en grafische uitwerking.",
+    url: "/Chocolate",
+    images: [{ url: "/img/2526_BDL3_PACK_H1_WaterschootJ.jpg", width: 1200, height: 630, alt: "Chocolate — verpakkingsontwerp door Jarne Waterschoot" }],
+  },
+  twitter: { images: ["/img/2526_BDL3_PACK_H1_WaterschootJ.jpg"] },
+  other: {
+    "description:fr": "Conception d'emballage chocolat premium par Jarne Waterschoot. Identité produit, recherche de matériaux et développement graphique.",
+    "description:en": "Premium chocolate packaging design by Jarne Waterschoot. Product identity, material research and graphic development.",
+  },
+}
 
 export default function ChocolatePage() {
-  const { style } = useStyle();
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}>
-        {style === "industrial" ? <ChocolatePageIndustrial /> : <ChocolatePageModern />}
-      </motion.div>
-    </AnimatePresence>
-  );
+  return <ChocolatePageIndustrial />
 }

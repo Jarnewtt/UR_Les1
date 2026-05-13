@@ -1,12 +1,13 @@
-"use client"
+﻿"use client"
 
 import { useState, useEffect, useRef } from "react"
 import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion"
+import { trackCTAClick } from "@/lib/analytics"
 
 // ── THEME & TOKENS ───────────────────────────────────────────────────────────
-type Theme = { bg: string; surface: string; ink: string; inkSub: string; orange: string; border: string; isLight: boolean }
-const DARK: Theme  = { bg:"#080807", surface:"#111110", ink:"#F0EDE8", inkSub:"#C8C4BE", orange:"#FF5C1A", border:"#262420", isLight:false }
-const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", orange:"#E84000", border:"#DDD8D0", isLight:true  }
+type Theme = { bg: string; surface: string; ink: string; inkSub: string; blue: string; border: string; isLight: boolean }
+const DARK: Theme  = { bg:"#080807", surface:"#111110", ink:"#F0EDE8", inkSub:"#C8C4BE", blue:"#1A1AFF", border:"#262420", isLight:false }
+const LIGHT: Theme = { bg:"#FAFAF8", surface:"#F0EDE8", ink:"#0A0908",  inkSub:"#3A3530", blue:"#1A1AFF", border:"#DDD8D0", isLight:true  }
 
 const E = [0.16, 1, 0.3, 1] as const;
 
@@ -15,16 +16,14 @@ type Milestone = { year: string; title: string; desc: string }
 const MILESTONES: Milestone[] = [
   { year: "2023", title: "The Spark", desc: "Start van mijn passie voor grafisch ontwerp en branding bij de opleiding grafische en digitale media bij de AP Hogeschool in Antwerpen." },
   { year: "2025", title: "Shift", desc: "Focus op verschillende designtechnieken en hoe analoge esthetiek vertaald wordt naar digitale schermen." },
-  { year: "2026", title: "New Era", desc: "Als grafisch designer wil ik mij blijven ontwikkelen door te leren, experimenteren en mijn creatieve grenzen te verleggen. Ik streef ernaar mijn vaardigheden te verdiepen en mijn eigen stijl verder te verfijnen." },
+  { year: "2026", title: "New Era", desc: "Als grafisch designer wil ik mij blijven ontwikkelen door te leren, experimenteren en mijn creatieve grenzen te verleggen. Ik streef ernaar mijn vaardigheden te verdiepen." },
 ]
 
-// ── HOOK: THEME — FIX: custom event i.p.v. MutationObserver ─────────────────
+// ── HOOK: THEME ───────────────────────────────────────────────────────────────
 function useTheme(): Theme {
   const [isDark, setIsDark] = useState(false)
   useEffect(() => {
-    // Lees initiële staat
     setIsDark(document.documentElement.classList.contains("theme-dark"))
-    // Luister naar synchrone theme-change events van de navbar
     const handler = (e: Event) => {
       setIsDark((e as CustomEvent).detail.isDark)
     }
@@ -43,8 +42,8 @@ function RevealText({ text, C }: { text: string; C: Theme }) {
   return (
     <motion.p
       ref={ref}
-      style={{ opacity, color: C.inkSub, fontFamily: "'DM Sans', sans-serif" }}
-      className="text-lg md:text-xl font-light leading-relaxed max-w-2xl"
+      style={{ opacity, color: C.inkSub, fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(16px,1.4vw,20px)", fontWeight: 300, lineHeight: 1.8 }}
+      className="max-w-2xl"
     >
       {text}
     </motion.p>
@@ -61,8 +60,7 @@ export default function AboutPageIndustrial() {
 
 
   return (
-    // FIX: transition op background verwijderd
-    <div ref={containerRef} style={{ background: C.bg, color: C.ink }} className="min-h-screen selection:bg-[#FF5C1A] selection:text-white">
+    <div ref={containerRef} style={{ background: C.bg, color: C.ink }} className="min-h-screen selection:bg-[#1A1AFF] selection:text-white">
 
       {/* 1. HERO SECTION */}
       <section className="relative h-[90vh] flex flex-col justify-end px-6 md:px-16 pb-20 overflow-hidden">
@@ -81,12 +79,12 @@ export default function AboutPageIndustrial() {
         <div className="relative z-10">
           <motion.span
             initial={{ opacity:0, x:-20 }} animate={{ opacity:1, x:0 }}
-            className="block mb-4 text-xs tracking-[0.4em] uppercase" style={{ color: C.orange }}>
+            className="block mb-4 uppercase" style={{ color: C.blue, fontFamily: "Inter, sans-serif", fontSize: 14, letterSpacing: "0.32em" }}>
             Creatief DNA
           </motion.span>
-          <h1 className="text-[15vw] md:text-[10vw] leading-[0.85] font-bebas uppercase mix-blend-difference" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+          <h1 className="leading-[0.85] mix-blend-difference" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(52px,10vw,120px)", textTransform: "uppercase" }}>
             De Ontwerper <br />
-            <span style={{ WebkitTextStroke: `clamp(0.3px, 0.1vw, 1px) ${C.inkSub}`, color: "transparent" }}>Achter het werk</span>
+            <span style={{ color: C.blue }}>Achter het werk</span>
           </h1>
         </div>
       </section>
@@ -96,24 +94,24 @@ export default function AboutPageIndustrial() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           <div className="md:col-span-4">
             <h3
-              className="sticky top-32 text-sm tracking-[0.4em] uppercase font-bold font-mono"
-              style={{ color: C.orange }}
+              className="sticky top-32"
+              style={{ color: C.blue, fontFamily: "'DM Mono', monospace", fontSize: 14, letterSpacing: "0.32em", textTransform: "uppercase", fontWeight: 600 }}
             >
               Filosofie
             </h3>
           </div>
           <div className="md:col-span-8 space-y-12">
-            <RevealText C={C} text="Ik geloof dat design niet alleen gaat over hoe het eruit ziet, maar over hoe het communiceert in een wereld vol ruis." />
-            <RevealText C={C} text="Mijn werk bevindt zich op het snijvlak van brute eenvoud en doordachte strategie. Geen decoratie, maar noodzaak." />
+            <RevealText C={C} text="Autisme wordt vaak als een beperking gezien, maar voor mij is het mijn grootste troef als grafisch ontwerper." />
+            <RevealText C={C} text="Details en verbanden die anderen missen, springen meteen in het oog. Out-of-the-box denken voelt natuurlijk aan en de noden van de eindgebruiker staan altijd centraal, want goed design is nooit louter decoratief, maar altijd doelgericht en doordacht." />
+            <RevealText C={C} text="Wat ik nog niet weet, leer ik met volle overgave, want stilstaan is simpelweg geen optie voor iemand als mij die elke dag wil groeien en het verschil wil maken." />
           </div>
         </div>
       </section>
 
       {/* 3. INTERACTIVE TIMELINE */}
-      {/* FIX: background gebruikt C.bg/surface direct i.p.v. hardcoded hex */}
       <section className="py-32" style={{ background: C.isLight ? "#F0EDE8" : "#0C0C0B" }}>
         <div className="px-6 md:px-16 mb-20">
-          <h2 className="text-5xl md:text-7xl font-bebas uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>Het Traject</h2>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(40px,7vw,72px)", textTransform: "uppercase", fontWeight: 400, lineHeight: 1 }}>Het Traject</h2>
         </div>
 
         <div className="relative">
@@ -127,45 +125,189 @@ export default function AboutPageIndustrial() {
       </section>
 
       {/* 4. SKILLS / TOOLS */}
-      <section className="py-32 px-6 md:px-16 overflow-hidden">
-        <div className="flex flex-col md:flex-row justify-between md:items-end mb-12 md:mb-20 gap-4 md:gap-8 items-center md:items-end text-center md:text-left">
-          <h2 className="text-[15vw] sm:text-5xl md:text-7xl font-bebas uppercase leading-none" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-            Mijn <span style={{ color: C.orange }}>Toolbox</span>
+      <section className="py-32 px-6 md:px-16 overflow-hidden" style={{ borderTop: `1px solid ${C.border}` }}>
+        <div className="flex flex-col md:flex-row justify-between md:items-end mb-16 md:mb-24 gap-4 md:gap-8 items-start text-left">
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(40px,7vw,72px)", textTransform: "uppercase", fontWeight: 400, lineHeight: 1 }}>
+            Mijn <span style={{ color: C.blue }}>Toolbox</span>
           </h2>
-          <p className="max-w-xs text-xs md:text-sm opacity-60 font-mono leading-relaxed mx-auto md:mx-0">
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(16px,1.4vw,20px)", fontWeight: 300, lineHeight: 1.8, opacity: 0.6, maxWidth: "30ch" }}>
             Een mix van analoge technieken en high-end digitale tools om concepten tot leven te wekken.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px]" style={{ background: C.border }}>
-          {["Adobe Illustrator", "Adobe Photoshop", "Adobe Indesign", "Adobe Premiere Pro", "After Effects", "Davinci Resolve", "Figma", "Visual Studio Code"].map((tool) => (
+        <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderTop: `1px solid ${C.border}` }}>
+          {[
+            {
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                </svg>
+              ),
+              title: "Graphic & Motion",
+              tools: ["Illustrator", "Photoshop", "Indesign", "After Effects", "Premiere Pro", "Davinci Resolve", "TouchDesigner"],
+            },
+            {
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter">
+                  <rect x="2" y="3" width="20" height="14" rx="1"/><path d="M8 21h8"/><path d="M12 17v4"/>
+                </svg>
+              ),
+              title: "Digital & Code",
+              tools: ["Figma", "Next.js", "Tailwind CSS", "TypeScript", "D3.js", "Framer Motion", "VS Code"],
+            },
+            {
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter">
+                  <rect x="4" y="4" width="16" height="16" rx="1"/><rect x="9" y="9" width="6" height="6"/>
+                  <path d="M9 2v2"/><path d="M15 2v2"/><path d="M9 20v2"/><path d="M15 20v2"/>
+                  <path d="M2 9h2"/><path d="M2 15h2"/><path d="M20 9h2"/><path d="M20 15h2"/>
+                </svg>
+              ),
+              title: "Studio & Productie",
+              tools: ["3D Mockups", "Packaging Design", "Brand Books", "Brand Identity"],
+            },
+          ].map((cat, ci) => (
             <motion.div
-              key={tool}
-              whileHover={{ backgroundColor: C.orange, color: "#fff" }}
-              style={{ background: C.bg }}
-              className="p-6 md:p-10 text-center font-mono text-xs uppercase tracking-widest transition-colors cursor-default flex items-center justify-center"
+              key={cat.title}
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ duration: 0.5, delay: ci * 0.1, ease: E }}
+              style={{
+                padding: "clamp(28px,4vw,48px) clamp(20px,3vw,40px)",
+                borderRight: ci < 2 ? `1px solid ${C.border}` : "none",
+                borderBottom: `1px solid ${C.border}`,
+              }}
             >
-              {tool}
+              {/* Category header */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 14,
+                color: C.blue, marginBottom: 32,
+              }}>
+                {cat.icon}
+                <span style={{
+                  fontFamily: "DM Mono, monospace",
+                  fontSize: 14, fontWeight: 600,
+                  letterSpacing: "0.28em", textTransform: "uppercase",
+                }}>
+                  {cat.title}
+                </span>
+              </div>
+
+              {/* Tool list */}
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+                {cat.tools.map((tool, ti) => (
+                  <motion.li
+                    key={tool}
+                    initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }} transition={{ duration: 0.35, delay: ci * 0.1 + ti * 0.04, ease: E }}
+                    className="tool-item"
+                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                  >
+                    <span className="tool-dot" style={{
+                      width: 5, height: 5, borderRadius: "50%",
+                      background: C.blue, opacity: 0.35, flexShrink: 0,
+                      transition: "opacity 0.22s, transform 0.22s",
+                    }} />
+                    <span style={{
+                      fontFamily: "DM Mono, monospace",
+                      fontSize: 14, letterSpacing: "0.18em",
+                      textTransform: "uppercase", color: C.inkSub,
+                      transition: "color 0.22s",
+                    }}>
+                      {tool}
+                    </span>
+                  </motion.li>
+                ))}
+              </ul>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* 5. CTA SECTION */}
-      <section className="h-[60vh] flex flex-col items-center justify-center text-center border-t px-6" style={{ borderColor: C.border }}>
-        <h2 className="text-4xl md:text-6xl mb-12 font-bebas uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>Gezien worden.<br />Niet vergeten worden.</h2>
+      <section
+        id="contact-section"
+        style={{
+          background: "#1A1AFF",
+          padding: "clamp(80px,12vw,160px) clamp(24px,6vw,96px)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          gap: "clamp(28px,3.5vw,44px)",
+        }}
+      >
+        <motion.h2
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: E }}
+          style={{
+            fontFamily: "'Anton', Impact, sans-serif",
+            fontSize: "clamp(52px,9vw,120px)",
+            textTransform: "uppercase",
+            lineHeight: 0.9,
+            letterSpacing: "0.01em",
+            color: "#fff",
+            margin: 0,
+          }}
+        >
+          Gezien worden.<br />Niet vergeten worden.
+        </motion.h2>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontWeight: 300,
+            fontSize: "clamp(16px,1.4vw,20px)",
+            lineHeight: 1.8,
+            color: "rgba(255,255,255,0.65)",
+            maxWidth: "42ch",
+            margin: 0,
+          }}
+        >
+          Klaar om samen iets te maken dat blijft hangen?
+        </motion.p>
+
         <motion.a
           href="/contact"
-          whileHover={{ scale: 1.05, rotate: -1 }}
-          className="px-12 py-6 text-sm tracking-[.3em] uppercase font-bold"
-          style={{ background: C.orange, color: "#fff" }}
+          onClick={() => trackCTAClick('Project Starten', '/about')}
+          whileHover={{ scale: 1.02 }}
+          className="about-cta"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 12,
+            background: "#fff",
+            color: "#1A1AFF",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 14,
+            fontWeight: 600,
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            padding: "16px 40px",
+            borderRadius: 4,
+            textDecoration: "none",
+          }}
         >
-          Project Starten
+          Project Starten <span style={{ fontSize: 14 }}>→</span>
         </motion.a>
       </section>
 
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;700&display=swap');
+        .tool-item:hover span:last-child { color: #1A1AFF !important; }
+        .tool-item:hover .tool-dot { opacity: 1 !important; transform: scale(1.5); }
+        @keyframes about-cta-glow {
+          0%, 100% { box-shadow: 0 0 0px rgba(255,255,255,0), 0 0 0px rgba(255,255,255,0); }
+          50%       { box-shadow: 0 0 28px rgba(255,255,255,0.55), 0 0 56px rgba(255,255,255,0.2); }
+        }
+        .about-cta { animation: about-cta-glow 2.8s ease-in-out infinite; }
+        .about-cta:hover { animation-play-state: paused; opacity: 0.9; }
       `}</style>
     </div>
   )
@@ -179,7 +321,7 @@ function TimelineItem({ milestone, index, C }: { milestone: Milestone; index: nu
   return (
     <div ref={ref} className={`relative flex flex-col md:flex-row items-center w-full ${isEven ? 'md:flex-row-reverse' : ''}`}>
       <div className="absolute left-[24px] md:left-1/2 w-3 h-3 -translate-x-1/2 rounded-full z-10"
-           style={{ background: isInView ? C.orange : C.border, transition: "0.6s all ease" }} />
+           style={{ background: isInView ? C.blue : C.border, transition: "0.6s all ease" }} />
 
       <div className="w-full md:w-1/2 px-12 md:px-24">
         <motion.div
@@ -187,12 +329,16 @@ function TimelineItem({ milestone, index, C }: { milestone: Milestone; index: nu
           animate={isInView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.8, ease: E }}
         >
-          <span className="font-mono text-4xl font-bold block mb-2" style={{ color: C.orange }}>{milestone.year}</span>
-          <h4 className="text-2xl font-bebas uppercase tracking-wider mb-4" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{milestone.title}</h4>
-          <p className="text-sm leading-relaxed opacity-70 max-w-sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>{milestone.desc}</p>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "clamp(28px,4vw,48px)", fontWeight: 700, display: "block", marginBottom: 8, color: C.blue }}>{milestone.year}</span>
+          <h4 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(20px,2.5vw,28px)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 16, fontWeight: 400 }}>{milestone.title}</h4>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "clamp(16px,1.4vw,20px)", fontWeight: 300, lineHeight: 1.8, opacity: 0.7, maxWidth: "40ch" }}>{milestone.desc}</p>
         </motion.div>
       </div>
       <div className="hidden md:block md:w-1/2" />
     </div>
   )
 }
+
+
+
+

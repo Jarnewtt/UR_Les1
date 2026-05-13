@@ -1,24 +1,24 @@
-"use client"
-
-import { useStyle } from "@/components/useStyle"
+import type { Metadata } from "next"
 import HomePageIndustrial from "@/components/HomePageIndustrial"
-import HomePageModern     from "@/components/HomePageModern"
-import { AnimatePresence, motion } from "framer-motion"
+
+export const metadata: Metadata = {
+  title: "Home",
+  description:
+    "Welkom op het portfolio van Jarne Waterschoot — grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes.",
+  openGraph: {
+    title: "Jarne Waterschoot — Portfolio",
+    description:
+      "Welkom op het portfolio van Jarne Waterschoot — grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes.",
+    url: "/home",
+    images: [{ url: "/img/portfolio_about.png", width: 1200, height: 630, alt: "Jarne Waterschoot — Portfolio" }],
+  },
+  twitter: { images: ["/img/portfolio_about.png"] },
+  other: {
+    "description:fr": "Bienvenue sur le portfolio de Jarne Waterschoot — designer graphique spécialisé en branding, packaging et campagnes digitales.",
+    "description:en": "Welcome to the portfolio of Jarne Waterschoot — graphic designer specializing in branding, packaging and digital campaigns.",
+  },
+}
 
 export default function HomePage() {
-  const { style } = useStyle()
-
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={style}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{    opacity: 0, y: -8 }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {style === "industrial" ? <HomePageIndustrial /> : <HomePageModern />}
-      </motion.div>
-    </AnimatePresence>
-  )
+  return <HomePageIndustrial />
 }

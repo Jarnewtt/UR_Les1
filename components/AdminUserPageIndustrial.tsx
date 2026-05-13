@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import React, { useState, useCallback, useRef, useEffect } from "react"
 
@@ -14,14 +14,14 @@ const DARK: T = {
   bg: "#0A0A0A", surface: "#111111", surface2: "#191919",
   border: "#222222", border2: "#2E2E2E",
   ink: "#F0EDE8", ink2: "#888882", ink3: "#3A3A38",
-  accent: "#FF5C1A", success: "#34C759", danger: "#FF3B30",
+  accent: "#1A1AFF", success: "#34C759", danger: "#FF3B30",
   isLight: false,
 }
 const LIGHT: T = {
   bg: "#F5F2EE", surface: "#FDFAF7", surface2: "#EEEBE7",
   border: "#D8D3CD", border2: "#C8C3BC",
   ink: "#1A1816", ink2: "#6B6660", ink3: "#B8B3AC",
-  accent: "#E04500", success: "#1A8A3C", danger: "#D42B22",
+  accent: "#1A1AFF", success: "#1A8A3C", danger: "#D42B22",
   isLight: true,
 }
 
@@ -77,7 +77,7 @@ function Field({ label, value, onChange, onBlur, type = "text", placeholder,
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
       <label style={{
-        fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.2em",
+        fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.2em",
         textTransform: "uppercase", color: showError ? t.danger : focused ? t.accent : t.ink2,
         transition: "color .15s",
       }}>{label}</label>
@@ -96,7 +96,7 @@ function Field({ label, value, onChange, onBlur, type = "text", placeholder,
             borderBottom: `2px solid ${showError ? t.danger : focused ? t.accent : t.border2}`,
             color: t.ink,
             fontFamily: mono ? "'DM Mono', monospace" : "'DM Sans', sans-serif",
-            fontSize: 14, fontWeight: 400,
+            fontSize: 16, fontWeight: 400,
             padding: `11px ${isPass ? "52px" : "40px"} 11px 0`,
             transition: "border-color .15s, background .15s", outline: "none",
           }}
@@ -114,8 +114,8 @@ function Field({ label, value, onChange, onBlur, type = "text", placeholder,
           {showOk    && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={t.success} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
         </div>
       </div>
-      {hint && !showError && <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: t.ink3, margin: 0 }}>{hint}</p>}
-      {showError && <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: t.danger, letterSpacing: "0.1em", margin: 0 }}>{error}</p>}
+      {hint && !showError && <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: t.ink3, margin: 0 }}>{hint}</p>}
+      {showError && <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.danger, letterSpacing: "0.1em", margin: 0 }}>{error}</p>}
     </div>
   )
 }
@@ -129,19 +129,19 @@ function Textarea({ label, value, onChange, onBlur, placeholder, error, touched,
   const showError = !!(touched && error)
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-      <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: showError ? t.danger : focused ? t.accent : t.ink2 }}>{label}</label>
+      <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.2em", textTransform: "uppercase", color: showError ? t.danger : focused ? t.accent : t.ink2 }}>{label}</label>
       <textarea value={value} onChange={e => onChange(e.target.value)}
         onFocus={() => setFocused(true)} onBlur={() => { setFocused(false); onBlur?.() }}
         placeholder={placeholder} rows={5}
         style={{
           background: t.surface2, border: `1px solid ${showError ? t.danger : focused ? t.accent : t.border2}`,
-          color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 14, lineHeight: 1.75,
+          color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 16, lineHeight: 1.75,
           padding: "12px 14px", outline: "none", resize: "none", width: "100%", boxSizing: "border-box",
           transition: "border-color .15s",
         }} />
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        {showError ? <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: t.danger, letterSpacing: "0.1em", margin: 0 }}>{error}</p> : <span />}
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: value.length > 180 ? t.accent : t.ink3 }}>{value.length} / 200</span>
+        {showError ? <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.danger, letterSpacing: "0.1em", margin: 0 }}>{error}</p> : <span />}
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: value.length > 180 ? t.accent : t.ink3 }}>{value.length} / 200</span>
       </div>
     </div>
   )
@@ -180,10 +180,10 @@ function Toast({ show, type, message, t }: { show: boolean; type: "success"|"err
     }}>
       <div style={{ width: 3, alignSelf: "stretch", background: color, flexShrink: 0 }} />
       <div>
-        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: "0.24em", textTransform: "uppercase", color, marginBottom: 3 }}>
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.24em", textTransform: "uppercase", color, marginBottom: 3 }}>
           {type === "error" ? "Fout" : "Succes"}
         </p>
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: t.ink }}>{message}</p>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: t.ink }}>{message}</p>
       </div>
     </div>
   )
@@ -196,7 +196,7 @@ function SectionHeader({ number, title, subtitle, complete, t }: {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 28 }}>
       <div style={{ paddingTop: 2, flexShrink: 0 }}>
-        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, color: complete ? t.success : t.accent, letterSpacing: "0.1em" }}>{number}</span>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: complete ? t.success : t.accent, letterSpacing: "0.1em" }}>{number}</span>
         <div style={{ width: 1, height: 28, background: complete ? t.success : t.accent, margin: "5px auto 0" }} />
       </div>
       <div>
@@ -204,7 +204,7 @@ function SectionHeader({ number, title, subtitle, complete, t }: {
           {title}
           {complete && <svg style={{ marginLeft: 10, verticalAlign: "middle" }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={t.success} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
         </h2>
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: t.ink2, lineHeight: 1.5 }}>{subtitle}</p>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: t.ink2, lineHeight: 1.5 }}>{subtitle}</p>
       </div>
     </div>
   )
@@ -234,8 +234,8 @@ function ActionRow({ title, description, checked, onChange, t, icon }: {
         color: checked ? t.accent : t.ink2, transition: "all .2s",
       }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: t.ink, marginBottom: 2 }}>{title}</p>
-        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: t.ink2 }}>{description}</p>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 500, color: t.ink, marginBottom: 2 }}>{title}</p>
+        <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: t.ink2 }}>{description}</p>
       </div>
       <Toggle checked={checked} onChange={onChange} t={t} />
     </div>
@@ -255,7 +255,7 @@ export default function AdminUserPageIndustrial() {
   const [links,     setLinks]     = useState<string[]>([])
   const [newLink,   setNewLink]   = useState("")
   const [addingLink, setAddingLink] = useState(false)
-  const [profileColor, setProfileColor] = useState("#FF5C1A")
+  const [profileColor, setProfileColor] = useState("#1A1AFF")
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -270,7 +270,7 @@ export default function AdminUserPageIndustrial() {
     return () => window.removeEventListener("resize", check)
   }, [])
 
-  const PROFILE_COLORS = ["#FF5C1A","#E8280A","#F59E0B","#3B82F6","#8B5CF6","#10B981","#EC4899","#64748B"]
+  const PROFILE_COLORS = ["#1A1AFF","#E8280A","#F59E0B","#3B82F6","#8B5CF6","#10B981","#EC4899","#64748B"]
 
   const showToast = (type: "success"|"error", message: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -313,30 +313,56 @@ export default function AdminUserPageIndustrial() {
   const nativeInput: React.CSSProperties = {
     background: t.surface2, border: "none",
     borderBottom: `2px solid ${t.border2}`,
-    color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 14,
+    color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 16,
     padding: "11px 0", outline: "none", width: "100%", boxSizing: "border-box",
     transition: "border-color .15s", colorScheme: t.isLight ? "light" : "dark",
   }
 
   return (
-    <div style={{ background: t.bg, minHeight: "100vh", color: t.ink, transition: "background .3s, color .3s" }}>
+    <div className="au-layout" style={{ background: t.bg, color: t.ink, transition: "background .3s, color .3s" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        ::selection{background:${t.accent};color:${t.isLight?"#fff":"#000"}}
+        ::selection{background:${t.accent};color:#fff}
         ::-webkit-scrollbar{width:2px} ::-webkit-scrollbar-thumb{background:${t.accent}}
-        input::placeholder,textarea::placeholder{color:${t.ink3};font-family:'DM Sans',sans-serif;font-size:13px}
+        input::placeholder,textarea::placeholder{color:${t.ink3};font-family:'DM Sans',sans-serif;font-size:16px}
         select option{background:${t.surface};color:${t.ink}}
         input[type="date"]::-webkit-calendar-picker-indicator{filter:${t.isLight?"none":"invert(1)"};opacity:.35;cursor:pointer}
+
+        /* ── Viewport-fitting layout ── */
+        .au-layout { height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+        .au-body   { flex:1; overflow:hidden; display:grid; width:100%; }
+        .au-aside  { overflow-y:auto; height:100%; }
+        .au-main-scroll { overflow-y:auto; height:100%; padding-bottom:64px; }
+        @media (max-width: 767px) {
+          .au-layout { height:auto; min-height:100vh; display:block; overflow:auto; }
+          .au-body   { flex:none; overflow:visible; display:block; }
+          .au-aside  { overflow-y:visible; height:auto; }
+          .au-main-scroll { overflow-y:visible; height:auto; padding-bottom:40px; }
+        }
+
+        /* ── Responsive header ── */
+        .au-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+        .au-header-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .au-save-btn { white-space:nowrap; }
+        .au-color-swatch { width:26px !important; height:26px !important; }
+        @media (max-width: 480px) {
+          .au-save-btn { width:100%; justify-content:center; text-align:center; }
+          .au-header-actions { width:100%; }
+          .au-color-swatch { width:32px !important; height:32px !important; }
+        }
+        @media (max-width: 767px) {
+          .au-bottom-actions { flex-direction:column !important; }
+          .au-bottom-actions button { width:100%; justify-content:center; }
+        }
       `}</style>
 
       <Toast show={toast.show} type={toast.type} message={toast.message} t={t} />
 
       {/* ── HEADER ── */}
-      <header style={{
+      <header className="au-header" style={{
         borderBottom: `1px solid ${t.border}`,
         padding: isMobile ? "14px 16px" : "22px 48px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
         position: "sticky", top: 0, zIndex: 100,
         background: t.bg,
       }}>
@@ -344,7 +370,7 @@ export default function AdminUserPageIndustrial() {
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${t.accent},transparent)` }} />
 
         <div>
-          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: "0.3em", textTransform: "uppercase", color: t.accent, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.3em", textTransform: "uppercase", color: t.accent, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 12, height: 1, background: t.accent, display: "inline-block" }} />
             Beheer / Profiel
           </p>
@@ -354,20 +380,21 @@ export default function AdminUserPageIndustrial() {
           </h1>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div className="au-header-actions">
           {hasChanges && (
-            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: t.ink2, letterSpacing: "0.16em", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.ink2, letterSpacing: "0.16em", display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ width: 5, height: 5, background: t.accent, display: "inline-block" }} />
               {!isMobile && "Niet opgeslagen"}
             </span>
           )}
-          <button onClick={handleSave} style={{
+          <button className="au-save-btn" onClick={handleSave} style={{
             border: `1px solid ${t.accent}`, background: "transparent",
             color: t.accent, fontFamily: "'DM Mono', monospace",
-            fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+            fontSize: 16, letterSpacing: "0.22em", textTransform: "uppercase",
             padding: "11px 28px", cursor: "pointer", transition: "background .15s, color .15s",
+            display: "flex", alignItems: "center", minHeight: 48,
           }}
-            onMouseEnter={e => { e.currentTarget.style.background = t.accent; e.currentTarget.style.color = t.isLight ? "#fff" : "#000" }}
+            onMouseEnter={e => { e.currentTarget.style.background = t.accent; e.currentTarget.style.color = "#fff" }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = t.accent }}>
             Opslaan ↗
           </button>
@@ -375,22 +402,19 @@ export default function AdminUserPageIndustrial() {
       </header>
 
       {/* ── BODY ── */}
-      <div style={{
-        display: "grid", gridTemplateColumns: isMobile ? "1fr" : "260px 1fr",
+      <div className="au-body" style={{
+        gridTemplateColumns: isMobile ? "1fr" : "260px 1fr",
         maxWidth: 1240, margin: "0 auto",
-        padding: isMobile ? "0 16px 40px" : "0 48px 64px",
+        padding: isMobile ? "0 16px 40px" : "0 48px 0",
       }}>
 
         {/* ── SIDEBAR ── */}
-        <aside style={{
+        <aside className="au-aside" style={{
           borderRight: isMobile ? "none" : `1px solid ${t.border}`,
           borderBottom: isMobile ? `1px solid ${t.border}` : "none",
           paddingRight: isMobile ? 0 : 28,
           paddingTop: isMobile ? 20 : 40,
-          paddingBottom: isMobile ? 24 : 0,
-          position: isMobile ? "static" : "sticky", top: 90,
-          height: isMobile ? "auto" : "calc(100vh - 90px)",
-          overflowY: isMobile ? "visible" : "auto",
+          paddingBottom: isMobile ? 24 : 40,
           display: "flex", flexDirection: "column", gap: isMobile ? 20 : 28,
         }}>
 
@@ -409,25 +433,25 @@ export default function AdminUserPageIndustrial() {
             <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: displayName ? t.ink : t.ink3, lineHeight: 1, marginBottom: 4 }}>
               {displayName ?? "Jouw naam"}
             </p>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: t.accent, letterSpacing: "0.18em", textTransform: "uppercase" }}>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.accent, letterSpacing: "0.18em", textTransform: "uppercase" }}>
               {form.role || "Jouw functietitel"}
             </p>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: t.ink2, marginTop: 3 }}>
+            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: t.ink2, marginTop: 3 }}>
               {form.city || form.country
                 ? `${form.city}${form.city && form.country ? ", " : ""}${form.country}`
                 : "Stad, Land"}
             </p>
             {form.email && (
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: t.ink2, marginTop: 8, wordBreak: "break-all" }}>{form.email}</p>
+              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.ink2, marginTop: 8, wordBreak: "break-all" }}>{form.email}</p>
             )}
             {form.instagram && (
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, color: t.ink2, marginTop: 4 }}>@{form.instagram.replace(/^@/, "")}</p>
+              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.ink2, marginTop: 4 }}>@{form.instagram.replace(/^@/, "")}</p>
             )}
           </div>
 
           {/* Volledigheid */}
           <div>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase", color: t.accent, marginBottom: 14 }}>Volledigheid</p>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.26em", textTransform: "uppercase", color: t.accent, marginBottom: 14 }}>Volledigheid</p>
 
             {/* progress bar */}
             <div style={{ height: 2, background: t.border2, marginBottom: 16, overflow: "hidden" }}>
@@ -445,8 +469,8 @@ export default function AdminUserPageIndustrial() {
                 borderBottom: i < completionItems.length - 1 ? `1px solid ${t.border}` : "none",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: t.ink3 }}>0{i + 1}</span>
-                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: item.done ? t.ink : t.ink2 }}>{item.label}</span>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.ink3 }}>0{i + 1}</span>
+                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: item.done ? t.ink : t.ink2 }}>{item.label}</span>
                 </div>
                 {item.done
                   ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={t.success} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -455,18 +479,18 @@ export default function AdminUserPageIndustrial() {
               </div>
             ))}
 
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: t.ink3, letterSpacing: "0.12em", marginTop: 14 }}>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.ink3, letterSpacing: "0.12em", marginTop: 14 }}>
               {score}/4 secties ingevuld
             </p>
           </div>
 
           {/* Profielkleur */}
           <div style={{ paddingTop: 4 }}>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase", color: t.ink2, marginBottom: 14 }}>Profielkleur</p>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.26em", textTransform: "uppercase", color: t.ink2, marginBottom: 14 }}>Profielkleur</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {PROFILE_COLORS.map(c => (
-                <button key={c} onClick={() => setProfileColor(c)} style={{
-                  width: 20, height: 20, background: c, border: "none",
+                <button key={c} onClick={() => setProfileColor(c)} className="au-color-swatch" style={{
+                  background: c, border: "none",
                   cursor: "pointer", padding: 0, flexShrink: 0,
                   outline: profileColor === c ? `2px solid ${t.ink}` : "2px solid transparent",
                   outlineOffset: 2,
@@ -479,7 +503,7 @@ export default function AdminUserPageIndustrial() {
         </aside>
 
         {/* ── MAIN CONTENT ── */}
-        <main style={{ paddingLeft: isMobile ? 0 : 48, paddingTop: isMobile ? 24 : 48 }}>
+        <main className="au-main-scroll" style={{ paddingLeft: isMobile ? 0 : 48, paddingTop: isMobile ? 24 : 48 }}>
 
           {/* 01 — Basisgegevens */}
           <section style={{ marginBottom: 0 }}>
@@ -500,13 +524,13 @@ export default function AdminUserPageIndustrial() {
 
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 16 : "20px 32px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: t.ink2 }}>Geboortedatum</label>
+                <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.2em", textTransform: "uppercase", color: t.ink2 }}>Geboortedatum</label>
                 <input type="date" value={form.birthdate} onChange={e => update("birthdate")(e.target.value)} style={nativeInput}
                   onFocus={e => e.currentTarget.style.borderBottomColor = t.accent}
                   onBlur={e => e.currentTarget.style.borderBottomColor = t.border2} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: t.ink2 }}>Geslacht</label>
+                <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.2em", textTransform: "uppercase", color: t.ink2 }}>Geslacht</label>
                 <select value={form.gender} onChange={e => update("gender")(e.target.value)} style={{ ...nativeInput, appearance: "none", cursor: "pointer", color: form.gender ? t.ink : t.ink3 }}
                   onFocus={e => e.currentTarget.style.borderBottomColor = t.accent}
                   onBlur={e => e.currentTarget.style.borderBottomColor = t.border2}>
@@ -535,7 +559,7 @@ export default function AdminUserPageIndustrial() {
             <SectionHeader number="03" title="Sociale Media" subtitle="Koppel je online kanalen voor bezoekers." complete={!!form.instagram || links.length > 0} t={t} />
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: t.ink2, display: "block", marginBottom: 10 }}>Instagram</label>
+              <label style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.2em", textTransform: "uppercase", color: t.ink2, display: "block", marginBottom: 10 }}>Instagram</label>
               <div style={{
                 display: "flex", alignItems: "center", gap: 12,
                 borderBottom: `2px solid ${t.border2}`, paddingBottom: 10,
@@ -544,10 +568,10 @@ export default function AdminUserPageIndustrial() {
                 onFocusCapture={e => (e.currentTarget.style.borderBottomColor = t.accent)}
                 onBlurCapture={e => (e.currentTarget.style.borderBottomColor = t.border2)}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={t.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: t.ink3 }}>@</span>
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, color: t.ink3 }}>@</span>
                 <input value={form.instagram.replace(/^@/, "")} onChange={e => update("instagram")(e.target.value)}
                   placeholder="jouw_handle"
-                  style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 14 }} />
+                  style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 16 }} />
               </div>
             </div>
 
@@ -560,7 +584,7 @@ export default function AdminUserPageIndustrial() {
                   }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
                     <input value={link} onChange={e => { const nl = [...links]; nl[i] = e.target.value; setLinks(nl) }}
-                      placeholder="https://..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 14 }} />
+                      placeholder="https://..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 16 }} />
                     <button onClick={() => setLinks(links.filter((_, j) => j !== i))}
                       style={{ background: "none", border: "none", color: t.ink3, cursor: "pointer", display: "flex", padding: 2 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -572,16 +596,16 @@ export default function AdminUserPageIndustrial() {
 
             {addingLink ? (
               <div style={{ border: `1px solid ${t.accent}`, padding: 18, marginBottom: 12 }}>
-                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: "0.24em", textTransform: "uppercase", color: t.accent, marginBottom: 12 }}>Nieuwe link</p>
+                <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.24em", textTransform: "uppercase", color: t.accent, marginBottom: 12 }}>Nieuwe link</p>
                 <div style={{ display: "flex", gap: 8 }}>
                   <input value={newLink} onChange={e => setNewLink(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter" && newLink.trim()) { setLinks([...links, newLink.trim()]); setNewLink(""); setAddingLink(false) }}}
                     placeholder="https://jouwwebsite.be" autoFocus
-                    style={{ flex: 1, background: t.surface2, border: `1px solid ${t.border2}`, color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 13, padding: "9px 12px", outline: "none" }} />
+                    style={{ flex: 1, background: t.surface2, border: `1px solid ${t.border2}`, color: t.ink, fontFamily: "'DM Sans', sans-serif", fontSize: 16, padding: "9px 12px", outline: "none" }} />
                   <button onClick={() => { if (newLink.trim()) { setLinks([...links, newLink.trim()]); setNewLink(""); setAddingLink(false) }}}
-                    style={{ border: `1px solid ${t.accent}`, background: "transparent", color: t.accent, fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", padding: "9px 16px", cursor: "pointer" }}>Voeg toe</button>
+                    style={{ border: `1px solid ${t.accent}`, background: "transparent", color: t.accent, fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.18em", textTransform: "uppercase", padding: "9px 16px", cursor: "pointer" }}>Voeg toe</button>
                   <button onClick={() => setAddingLink(false)}
-                    style={{ border: `1px solid ${t.border}`, background: "transparent", color: t.ink2, fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", padding: "9px 12px", cursor: "pointer" }}>Annuleer</button>
+                    style={{ border: `1px solid ${t.border}`, background: "transparent", color: t.ink2, fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.14em", textTransform: "uppercase", padding: "9px 12px", cursor: "pointer" }}>Annuleer</button>
                 </div>
               </div>
             ) : (
@@ -589,7 +613,7 @@ export default function AdminUserPageIndustrial() {
                 display: "flex", alignItems: "center", gap: 8,
                 background: "transparent", border: `1px dashed ${t.border2}`,
                 padding: "10px 14px",
-                fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: "0.16em",
+                fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.16em",
                 textTransform: "uppercase", color: t.ink2,
                 cursor: "pointer", transition: "border-color .15s, color .15s",
               }}
@@ -634,7 +658,7 @@ export default function AdminUserPageIndustrial() {
                 onMouseLeave={e => e.currentTarget.style.borderColor = t.border}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  <span style={{ fontSize: 13, color: t.ink }}>Download data</span>
+                  <span style={{ fontSize: 16, color: t.ink }}>Download data</span>
                 </div>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={t.ink2} strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -649,7 +673,7 @@ export default function AdminUserPageIndustrial() {
                 onMouseLeave={e => e.currentTarget.style.borderColor = t.border}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.ink2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                  <span style={{ fontSize: 13, color: t.ink }}>Wachtwoord resetten</span>
+                  <span style={{ fontSize: 16, color: t.ink }}>Wachtwoord resetten</span>
                 </div>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={t.ink2} strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -657,12 +681,12 @@ export default function AdminUserPageIndustrial() {
 
             {/* Danger zone */}
             <div style={{ marginTop: 28, padding: "18px", border: `1px solid ${t.danger}25`, background: `${t.danger}05` }}>
-              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, letterSpacing: "0.26em", textTransform: "uppercase", color: t.danger, marginBottom: 8 }}>Gevaarlijke zone</p>
-              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: t.ink2, marginBottom: 14 }}>Het verwijderen van je account is permanent en kan niet ongedaan worden gemaakt.</p>
+              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 16, letterSpacing: "0.26em", textTransform: "uppercase", color: t.danger, marginBottom: 8 }}>Gevaarlijke zone</p>
+              <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, color: t.ink2, marginBottom: 14 }}>Het verwijderen van je account is permanent en kan niet ongedaan worden gemaakt.</p>
               <button onClick={() => showToast("error", "Bevestigingsscherm nog niet geïmplementeerd")} style={{
                 background: "transparent", border: `1px solid ${t.danger}50`,
                 color: t.danger, fontFamily: "'DM Mono', monospace",
-                fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+                fontSize: 16, letterSpacing: "0.18em", textTransform: "uppercase",
                 padding: "9px 18px", cursor: "pointer", transition: "background .15s, border-color .15s",
               }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${t.danger}12`; e.currentTarget.style.borderColor = t.danger }}
@@ -673,11 +697,11 @@ export default function AdminUserPageIndustrial() {
           </section>
 
           {/* BOTTOM ACTIONS */}
-          <div style={{ borderTop: `1px solid ${t.border}`, marginTop: 40, paddingTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
+          <div className="au-bottom-actions" style={{ borderTop: `1px solid ${t.border}`, marginTop: 40, paddingTop: 24, display: "flex", justifyContent: "flex-end", gap: 12 }}>
             <button onClick={() => setTouched({})} style={{
               border: `1px solid ${t.border}`, background: "transparent",
               color: t.ink2, fontFamily: "'DM Mono', monospace",
-              fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase",
+              fontSize: 16, letterSpacing: "0.2em", textTransform: "uppercase",
               padding: "11px 20px", cursor: "pointer", transition: "color .15s, border-color .15s",
             }}
               onMouseEnter={e => { e.currentTarget.style.color = t.ink; e.currentTarget.style.borderColor = t.border2 }}
@@ -687,10 +711,10 @@ export default function AdminUserPageIndustrial() {
             <button onClick={handleSave} style={{
               border: `1px solid ${t.accent}`, background: "transparent",
               color: t.accent, fontFamily: "'DM Mono', monospace",
-              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontSize: 16, letterSpacing: "0.22em", textTransform: "uppercase",
               padding: "11px 32px", cursor: "pointer", transition: "background .15s, color .15s",
             }}
-              onMouseEnter={e => { e.currentTarget.style.background = t.accent; e.currentTarget.style.color = t.isLight ? "#fff" : "#000" }}
+              onMouseEnter={e => { e.currentTarget.style.background = t.accent; e.currentTarget.style.color = "#fff" }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = t.accent }}>
               Wijzigingen opslaan →
             </button>
@@ -700,3 +724,5 @@ export default function AdminUserPageIndustrial() {
     </div>
   )
 }
+
+

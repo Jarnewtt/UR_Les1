@@ -6,14 +6,73 @@ import Footer                  from "@/components/Footer"
 import GlobalCursor            from "@/components/GlobalCursor"
 import Script                  from "next/script"
 import GoogleAnalyticsTracker  from "@/components/GoogleAnalyticsTracker"
-import { StyleProvider }       from "@/components/useStyle"
+import ScrollDepthTracker      from "@/components/ScrollDepthTracker"
+import EngagementTracker       from "@/components/EngagementTracker"
 import IdleScreen from "@/components/IdleScreen"
 import SurveyButton from "@/components/SurveyButton"
+import ContactButton from "@/components/ContactButton"
 import "./globals.css"
 
-export const metadata = {
-  title: "Jarne Waterschoot — Portfolio",
-  description: "Graphic designer gespecialiseerd in branding, packaging en digitale campagnes.",
+export const metadata: import("next").Metadata = {
+  metadataBase: new URL("https://jwcreative.netlify.app"),
+  title: {
+    default: "Jarne Waterschoot — Portfolio",
+    template: "%s — Jarne Waterschoot",
+  },
+  description:
+    "Grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes. Tactiele visuele verhalen voor merken die durven opvallen.",
+  keywords: [
+    "grafisch ontwerper", "branding", "verpakking", "portfolio", "Jarne Waterschoot", "België",
+    "graphic designer", "packaging", "branding Belgium", "visual identity", "graphic design UK",
+    "designer graphique", "identité visuelle", "packaging Belgique",
+  ],
+  authors: [{ name: "Jarne Waterschoot" }],
+  creator: "Jarne Waterschoot",
+  openGraph: {
+    type: "website",
+    locale: "nl_BE",
+    alternateLocale: ["fr_BE", "fr_FR", "en_US", "en_GB"],
+    siteName: "Jarne Waterschoot",
+    title: "Jarne Waterschoot — Portfolio",
+    description:
+      "Grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes. Tactiele visuele verhalen voor merken die durven opvallen.",
+    images: [
+      {
+        url: "/img/portfolio_about.png",
+        width: 1200,
+        height: 630,
+        alt: "Jarne Waterschoot — Grafisch ontwerper",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jarne Waterschoot — Portfolio",
+    description:
+      "Grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes.",
+    creator: "@jarne_wtt",
+    images: ["/img/portfolio_about.png"],
+  },
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  other: {
+    "description:nl-BE":
+      "Grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes. Tactiele visuele verhalen voor merken die durven opvallen.",
+    "description:fr-BE":
+      "Designer graphique spécialisé en branding, packaging et campagnes digitales. Des histoires visuelles tactiles pour les marques qui osent se démarquer — basé en Belgique.",
+    "description:fr-FR":
+      "Designer graphique spécialisé en branding, packaging et campagnes digitales. Des histoires visuelles tactiles pour les marques qui osent se démarquer.",
+    "description:en-US":
+      "Graphic designer specializing in branding, packaging and digital campaigns. Tactile visual stories for brands that dare to stand out.",
+    "description:en-GB":
+      "Graphic designer specialising in branding, packaging and digital campaigns. Tactile visual stories for brands that dare to stand out.",
+    "og:see_also": "https://www.instagram.com/jarne_wtt/",
+  },
 }
 
 export default function RootLayout({
@@ -24,11 +83,26 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <head>
-        <style>{`
-          @media (hover:hover) and (pointer:fine) {
-            *, *::before, *::after { cursor: none !important; }
-          }
-        `}</style>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              "name": "Jarne Waterschoot",
+              "url": "https://jwcreative.netlify.app",
+              "email": "jarnewaterschoot@hotmail.com",
+              "jobTitle": "Grafisch Ontwerper",
+              "description": "Grafisch ontwerper gespecialiseerd in branding, verpakking en digitale campagnes.",
+              "nationality": { "@type": "Country", "name": "Belgium" },
+              "sameAs": [
+                "https://www.instagram.com/jarne_wtt/",
+                "mailto:jarnewaterschoot@hotmail.com"
+              ],
+              "knowsAbout": ["Branding", "Verpakkingsontwerp", "Grafisch ontwerp", "Digitale campagnes", "Typografie"],
+            }),
+          }}
+        />
       </head>
       <body suppressHydrationWarning className="min-h-screen flex flex-col">
 
@@ -46,21 +120,22 @@ export default function RootLayout({
         </Script>
         
         <GoogleAnalyticsTracker />
+        <ScrollDepthTracker />
+        <EngagementTracker />
 
-        <StyleProvider>
-          {/* GlobalCursor staat hier — actief over navbar, pagina én footer */}
-          <GlobalCursor />
-          <IdleScreen />
+        {/* GlobalCursor staat hier — actief over navbar, pagina én footer */}
+        <GlobalCursor />
+        <IdleScreen />
 
-          <GlobalNavbar  />
+        <GlobalNavbar />
 
-          <main className="flex-1 mx-auto w-full">
-            {children}
-          </main>
+        <main className="flex-1 mx-auto w-full">
+          {children}
+        </main>
 
-          <Footer />
-          <SurveyButton />
-        </StyleProvider>
+        <Footer />
+        <SurveyButton />
+        <ContactButton />
 
         <AppToaster />
 
