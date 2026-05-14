@@ -255,6 +255,12 @@ export default function HomePageIndustrial() {
           from { transform:translateX(0) }
           to   { transform:translateX(-1176px) }
         }
+        @media(max-width:639px){
+          @keyframes carousel-scroll {
+            from { transform:translateX(0) }
+            to   { transform:translateX(-900px) }
+          }
+        }
         .carousel-track {
           display:flex; gap:32px; width:max-content;
           animation:carousel-scroll 28s linear infinite;
@@ -264,6 +270,10 @@ export default function HomePageIndustrial() {
         .carousel-card {
           width:360px; flex-shrink:0;
           display:block; text-decoration:none; color:inherit; cursor:pointer;
+        }
+        @media(max-width:639px){
+          .carousel-track { gap:20px; }
+          .carousel-card  { width:clamp(240px,75vw,300px); }
         }
         .carousel-img-wrap { position:relative; overflow:hidden; aspect-ratio:4/3 }
 
@@ -361,10 +371,10 @@ export default function HomePageIndustrial() {
 
           {/* Info bar */}
           <div style={{
-            display:"flex", alignItems:"center", flexWrap:"wrap", gap:"0 10px",
+            display:"flex", alignItems:"center", flexWrap:"wrap", gap:"0 8px",
             marginTop:20,
-            fontFamily:"Inter,sans-serif", fontSize: 14,
-            letterSpacing:"0.28em", textTransform:"uppercase",
+            fontFamily:"Inter,sans-serif", fontSize:"clamp(10px,3vw,14px)",
+            letterSpacing:"clamp(0.1em,0.5vw,0.28em)", textTransform:"uppercase",
             color:C.inkMuted,
           }}>
             <span style={{ display:"inline-block", width:20, height:1, background: C.isLight ? C.blue : C.ink, verticalAlign:"middle", marginRight:4, flexShrink:0 }}/>

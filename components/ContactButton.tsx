@@ -235,7 +235,7 @@ export default function ContactButton() {
               pointerEvents: "all",
               position: "relative",
               display: "flex", alignItems: "center", justifyContent: "center",
-              gap: isMobile ? 0 : 9,
+              gap: 8,
               background: isMobile
                 ? ((overBlue || onContactPage) && !footerOpen && !menuOpen ? "#fff" : BLUE)
                 : (isOpen ? "#1A1A1A" : "#111"),
@@ -243,28 +243,33 @@ export default function ContactButton() {
                 ? ((overBlue || onContactPage) && !footerOpen && !menuOpen ? BLUE : "#fff")
                 : "#fff",
               border: isMobile ? "none" : "1px solid rgba(255,255,255,0.12)",
-              width:  isMobile ? 56 : "auto",
-              height: isMobile ? 56 : "auto",
-              padding: isMobile ? 0 : "11px 20px",
-              borderRadius: isMobile ? 14 : 0,
+              width: "auto",
+              height: "auto",
+              padding: isMobile ? "9px 14px" : "11px 20px",
+              borderRadius: isMobile ? 4 : 0,
               cursor: "pointer",
               fontFamily: "'DM Mono', monospace",
-              fontSize: 13, letterSpacing: "0.26em", textTransform: "uppercase",
+              fontSize: isMobile ? 12 : 13,
+              letterSpacing: "0.26em", textTransform: "uppercase",
               boxShadow: isMobile
                 ? ((overBlue || onContactPage) && !footerOpen && !menuOpen
                     ? "0 4px 28px rgba(255,255,255,0.3), 0 1px 6px rgba(0,0,0,0.12)"
                     : "0 4px 28px rgba(26,26,255,0.38), 0 1px 6px rgba(0,0,0,0.18)")
                 : "0 4px 24px rgba(0,0,0,0.5)",
               WebkitTapHighlightColor: "transparent",
+              whiteSpace: "nowrap",
               transition: "background 0.3s, color 0.3s, box-shadow 0.3s",
             }}
           >
             {isOpen ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             ) : isMobile ? (
-              <FiMail size={20} />
+              <>
+                <FiMail size={14} />
+                <span>Contact</span>
+              </>
             ) : (
               <>
                 <motion.span

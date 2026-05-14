@@ -129,6 +129,14 @@ export default function ProjectsPageIndustrial() {
           .proj-sticky-outer { display: block; }
         }
 
+        /* ── LEFT/RIGHT SPLIT — tablet narrows to 55/45 ── */
+        .proj-left-panel  { flex: 0 0 62%; }
+        .proj-right-panel { flex: 0 0 38%; }
+        @media(min-width:768px) and (max-width:1023px){
+          .proj-left-panel  { flex: 0 0 55%; }
+          .proj-right-panel { flex: 0 0 45%; }
+        }
+
         /* ── MOBILE LIST: only shown < 768px ── */
         .proj-mobile-list {
           display: flex;
@@ -293,7 +301,7 @@ export default function ProjectsPageIndustrial() {
         }}>
 
           {/* ── LEFT: Image panel ── */}
-          <div className="proj-img-panel" style={{
+          <div className="proj-img-panel proj-left-panel" style={{
             flex: "0 0 62%",
             padding: "clamp(28px,3.5vw,48px) clamp(14px,2vw,28px) clamp(28px,3.5vw,48px) clamp(28px,3.5vw,48px)",
             position: "relative",
@@ -339,7 +347,7 @@ export default function ProjectsPageIndustrial() {
           </div>
 
           {/* ── RIGHT: Info panel ── */}
-          <div style={{
+          <div className="proj-right-panel" style={{
             flex: "0 0 38%",
             display: "flex",
             flexDirection: "column",

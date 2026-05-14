@@ -175,10 +175,7 @@ export default function CineCityPageIndustrial() {
         ::-webkit-scrollbar-thumb { background: ${T.orange}55; }
 
         .cc-hero-bottom {
-          padding: 0 clamp(16px, 5vw, 60px) 100px;
-        }
-        @media (min-width: 768px) {
-          .cc-hero-bottom { padding-bottom: clamp(40px, 5vw, 72px); }
+          padding: 0 clamp(16px, 5vw, 60px) clamp(40px, 8vw, 100px);
         }
         .cc-hero-actions {
           display: flex;

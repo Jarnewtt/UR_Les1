@@ -31,21 +31,31 @@ export default function ProjectNav({ currentHref }: { currentHref: string }) {
       <style>{`
         .pn-link {
           display: flex; flex-direction: column; gap: 8px;
-          padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 52px);
+          padding: clamp(20px, 4vw, 48px) clamp(16px, 4vw, 52px);
           text-decoration: none; transition: background 0.22s;
-          min-height: 88px;
+          min-height: 80px;
         }
         .pn-link:hover { background: rgba(255,255,255,0.08); }
         .pn-center-link {
           display: flex; flex-direction: column; align-items: center;
           justify-content: center; gap: 10px; text-decoration: none;
-          padding: clamp(24px, 4vw, 48px) clamp(20px, 3vw, 40px);
-          transition: background 0.22s; min-height: 88px;
+          padding: clamp(20px, 4vw, 48px) clamp(20px, 3vw, 40px);
+          transition: background 0.22s; min-height: 80px;
         }
         .pn-center-link:hover { background: rgba(255,255,255,0.08); }
+        @media (max-width: 639px) {
+          .pn-nav { grid-template-columns: 1fr 1fr !important; }
+          .pn-center {
+            grid-column: 1 / -1; grid-row: 1;
+            border-right: none !important; border-left: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+          }
+          .pn-prev { grid-column: 1; grid-row: 2; border-top: none; }
+          .pn-next { grid-column: 2; grid-row: 2; border-top: none; }
+        }
       `}</style>
 
-      <nav style={{
+      <nav className="pn-nav" style={{
         position: "relative",
         background: BLUE,
         display: "grid",
@@ -63,7 +73,7 @@ export default function ProjectNav({ currentHref }: { currentHref: string }) {
         </svg>
 
         {/* ── Prev ── */}
-        <div style={{ position: "relative", zIndex: 1, borderRight: "1px solid rgba(255,255,255,0.15)" }}>
+        <div className="pn-prev" style={{ position: "relative", zIndex: 1, borderRight: "1px solid rgba(255,255,255,0.15)" }}>
           {prev ? (
             <Link href={prev.href} className="pn-link" onClick={() => trackProjectNav('prev', currentHref, prev.href)}>
               <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>
@@ -80,7 +90,7 @@ export default function ProjectNav({ currentHref }: { currentHref: string }) {
         </div>
 
         {/* ── Center: alle projecten ── */}
-        <div style={{ position: "relative", zIndex: 1, borderLeft: "1px solid rgba(255,255,255,0.15)", borderRight: "1px solid rgba(255,255,255,0.15)" }}>
+        <div className="pn-center" style={{ position: "relative", zIndex: 1, borderLeft: "1px solid rgba(255,255,255,0.15)", borderRight: "1px solid rgba(255,255,255,0.15)" }}>
           <Link href="/projects" className="pn-center-link" onClick={() => trackProjectNav('overview', currentHref)}>
             {/* Visible button container — clearly a tappable button */}
             <div style={{
@@ -103,7 +113,7 @@ export default function ProjectNav({ currentHref }: { currentHref: string }) {
         </div>
 
         {/* ── Next ── */}
-        <div style={{ position: "relative", zIndex: 1, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>
+        <div className="pn-next" style={{ position: "relative", zIndex: 1, borderLeft: "1px solid rgba(255,255,255,0.15)" }}>
           {next ? (
             <Link href={next.href} className="pn-link" style={{ alignItems: "flex-end" }} onClick={() => trackProjectNav('next', currentHref, next.href)}>
               <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}>

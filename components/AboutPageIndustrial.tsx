@@ -169,6 +169,7 @@ export default function AboutPageIndustrial() {
           ].map((cat, ci) => (
             <motion.div
               key={cat.title}
+              className="tools-grid-cell"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ duration: 0.5, delay: ci * 0.1, ease: E }}
               style={{
@@ -300,6 +301,9 @@ export default function AboutPageIndustrial() {
 
       <style jsx global>{`
         .tool-item:hover span:last-child { color: #1A1AFF !important; }
+        @media (max-width: 767px) {
+          .tools-grid-cell { border-right: none !important; }
+        }
         .tool-item:hover .tool-dot { opacity: 1 !important; transform: scale(1.5); }
         @keyframes about-cta-glow {
           0%, 100% { box-shadow: 0 0 0px rgba(255,255,255,0), 0 0 0px rgba(255,255,255,0); }

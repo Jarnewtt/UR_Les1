@@ -75,7 +75,7 @@ export default function FooterIndustrial({ accentColor: _accentColor, onClose }:
         <div style={{
           display: "flex", alignItems: "flex-end",
           justifyContent: "space-between", flexWrap: "wrap",
-          gap: "32px 48px",
+          gap: "clamp(24px,4vw,32px) clamp(24px,5vw,48px)",
           padding: "52px 0 40px",
           borderBottom: `1px solid ${C.border}`,
           transition: T,
@@ -175,7 +175,7 @@ export default function FooterIndustrial({ accentColor: _accentColor, onClose }:
           justifyContent: "space-between", flexWrap: "wrap",
           gap: 16, padding: "16px 0 24px",
         }}>
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "clamp(12px,3vw,24px)", flexWrap: "wrap" }}>
             {FOOTER_LINKS.map(link => (
               <button
                 key={link.name}

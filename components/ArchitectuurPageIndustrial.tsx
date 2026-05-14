@@ -265,7 +265,8 @@ export default function HeleneBinetPage({
         @media (min-width:640px)  { .hb-gallery-grid { grid-template-columns:repeat(3,1fr); } }
         @media (min-width:1024px) { .hb-gallery-grid { grid-template-columns:repeat(5,1fr); } }
 
-        .hb-leporello-mobile { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:20px; }
+        .hb-leporello-mobile { display:grid; grid-template-columns:repeat(2,1fr); gap:4px; padding:20px; }
+        @media(min-width:480px){ .hb-leporello-mobile { grid-template-columns:repeat(3,1fr); } }
         .hb-leporello-3d { display:none; }
         @media (min-width:768px) { .hb-leporello-mobile { display:none; } .hb-leporello-3d { display:block; } }
       `}</style>
@@ -635,10 +636,10 @@ export default function HeleneBinetPage({
         {selectedImage && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
             onClick={() => { setSelectedImage(null); trackLightboxClose('architectuur'); }}
-            style={{ position: "fixed", inset: 0, zIndex: 9000, background: C.isLight ? "rgba(250,250,248,0.97)" : "rgba(8,8,7,0.97)", display: "flex", alignItems: "center", justifyContent: "center", padding: "48px", transition: "background 0.45s ease" }}>
+            style={{ position: "fixed", inset: 0, zIndex: 9000, background: C.isLight ? "rgba(250,250,248,0.97)" : "rgba(8,8,7,0.97)", display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(12px,4vw,48px)", transition: "background 0.45s ease" }}>
 
             <button onClick={e => { e.stopPropagation(); const n = (lightboxIndex - 1 + localGallery.length) % localGallery.length; setLightboxIndex(n); setSelectedImage(localGallery[n]); trackLightboxNav('prev', String(n)); }}
-              style={{ position: "absolute", left: 32, background: "none", border: "none", color: C.inkMuted, fontSize: 28, padding: 16, transition: "color 0.2s" }}
+              style={{ position: "absolute", left: "clamp(4px,2vw,32px)", background: "none", border: "none", color: C.inkMuted, fontSize: "clamp(18px,3vw,28px)", padding: "clamp(8px,1.5vw,16px)", transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = C.orange)}
               onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}>←</button>
 
@@ -648,7 +649,7 @@ export default function HeleneBinetPage({
               alt="Volledige weergave" />
 
             <button onClick={e => { e.stopPropagation(); const n = (lightboxIndex + 1) % localGallery.length; setLightboxIndex(n); setSelectedImage(localGallery[n]); trackLightboxNav('next', String(n)); }}
-              style={{ position: "absolute", right: 32, background: "none", border: "none", color: C.inkMuted, fontSize: 28, padding: 16, transition: "color 0.2s" }}
+              style={{ position: "absolute", right: "clamp(4px,2vw,32px)", background: "none", border: "none", color: C.inkMuted, fontSize: "clamp(18px,3vw,28px)", padding: "clamp(8px,1.5vw,16px)", transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = C.orange)}
               onMouseLeave={e => (e.currentTarget.style.color = C.inkMuted)}>→</button>
 

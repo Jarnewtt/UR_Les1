@@ -178,6 +178,8 @@ export default function LoginPage() {
 
       <style>{`
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
+        .login-pw-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        @media(max-width:480px){ .login-pw-grid { grid-template-columns:1fr; } }
         ::selection { background:#1A1AFF; color:#fff }
         ::-webkit-scrollbar { width:2px }
         ::-webkit-scrollbar-thumb { background:#1A1AFF }
@@ -349,7 +351,7 @@ export default function LoginPage() {
                       <label style={labelStyle}>E-mailadres</label>
                       <input type="email" className="login-input" placeholder="je@email.be" required />
                     </div>
-                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                    <div className="login-pw-grid">
                       <div>
                         <label style={labelStyle}>Wachtwoord</label>
                         <PasswordInput C={C} placeholder="••••••••" required />
