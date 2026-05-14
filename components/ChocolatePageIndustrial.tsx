@@ -201,6 +201,15 @@ useEffect(() => {
           .choc-grid { grid-template-columns:repeat(3,1fr); }
         }
 
+        .choc-badge { white-space:nowrap; }
+        @media (max-width:639px) {
+          .choc-badge {
+            letter-spacing:0.06em !important;
+            padding:8px 14px !important;
+            white-space:nowrap;
+          }
+        }
+
       `}</style>
 
       <Grain T={T}/>
@@ -241,7 +250,7 @@ useEffect(() => {
           {/* Badge */}
           <motion.div initial={{ opacity:0, y:12 }} animate={{ opacity:1, y:0 }}
             transition={{ delay:0.2, duration:0.8 }}>
-            <span style={{ padding:"10px 32px",
+            <span className="choc-badge" style={{ padding:"10px 32px",
               border:`1px solid ${T.gold}55`, borderRadius:0,
               fontSize: 14, letterSpacing:"0.28em", textTransform:"uppercase",
               color:"#fde68a", background:"rgba(12,8,4,0.35)",

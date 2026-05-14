@@ -10,7 +10,6 @@ import ScrollDepthTracker      from "@/components/ScrollDepthTracker"
 import EngagementTracker       from "@/components/EngagementTracker"
 import IdleScreen from "@/components/IdleScreen"
 import SurveyButton from "@/components/SurveyButton"
-import ContactButton from "@/components/ContactButton"
 import "./globals.css"
 
 export const metadata: import("next").Metadata = {
@@ -139,7 +138,6 @@ export default function RootLayout({
 
         <Footer />
         <SurveyButton />
-        <ContactButton />
 
         <AppToaster />
 

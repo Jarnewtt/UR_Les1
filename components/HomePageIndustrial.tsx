@@ -170,6 +170,10 @@ export default function HomePageIndustrial() {
         }
         .contact-label { color:rgba(255,255,255,0.55) !important; }
         .contact-label::before { background:rgba(255,255,255,0.55) !important; }
+        @media(max-width:639px){
+          .section-label { font-size:11px; letter-spacing:0.14em; gap:8px; white-space:nowrap; }
+          .section-label::before { width:14px; }
+        }
 
         /* ── HERO — mobile-first ── */
         .hero-section {
