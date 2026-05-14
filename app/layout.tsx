@@ -81,8 +81,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="nl">
+    <html lang="nl" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var h=new Date().getHours();var d=h<7||h>=19;document.documentElement.classList.toggle('theme-dark',d);document.documentElement.classList.toggle('theme-light',!d);}catch(e){}})();` }} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;500;600&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

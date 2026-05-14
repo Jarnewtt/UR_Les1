@@ -373,8 +373,6 @@ export default function GlobalNavbarBase({ theme }: { theme: NavTheme }) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap');
-
         /* ---------- NAV ITEM ---------- */
         .${prefix}-nav-item {
           position: relative;

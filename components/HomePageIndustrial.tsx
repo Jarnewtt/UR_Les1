@@ -151,7 +151,6 @@ export default function HomePageIndustrial() {
     <div style={{ background:C.bg, color:C.ink, minHeight:"100vh", overflowX:"hidden", transition:"background 0.4s, color 0.4s" }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;500&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
         html { scroll-behavior:smooth }
         ::selection { background:${C.blue}; color:#fff }

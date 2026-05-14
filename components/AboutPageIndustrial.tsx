@@ -299,7 +299,6 @@ export default function AboutPageIndustrial() {
       </section>
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;700&display=swap');
         .tool-item:hover span:last-child { color: #1A1AFF !important; }
         .tool-item:hover .tool-dot { opacity: 1 !important; transform: scale(1.5); }
         @keyframes about-cta-glow {

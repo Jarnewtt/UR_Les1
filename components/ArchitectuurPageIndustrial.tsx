@@ -247,7 +247,7 @@ export default function HeleneBinetPage({
   return (
     <div ref={containerRef} style={{ minHeight: "100vh", background: C.bg, color: C.ink, overflowX: "hidden", fontFamily: "'DM Mono', monospace", transition: TT }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue${extraFontParam}&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;1,300&display=swap');
+        ${extraFontParam ? `@import url('https://fonts.googleapis.com/css2?family=${headingFont!.replace(/ /g, "+")}:wght@300;400;500&display=swap');` : ""}
 
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
         html { scroll-behavior:smooth; }

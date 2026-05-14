@@ -51,9 +51,6 @@ export default function LegalPageIndustrial({
       fontFamily: "'DM Mono', monospace",
       transition: TT, overflowX: "hidden",
     }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400&display=swap');
-      `}</style>
 
       {/* Top accent line */}
       <div style={{

@@ -177,7 +177,6 @@ export default function LoginPage() {
     }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0 }
         ::selection { background:#1A1AFF; color:#fff }
         ::-webkit-scrollbar { width:2px }

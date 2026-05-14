@@ -38,7 +38,6 @@ export default function ContactPageIndustrial() {
     }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;1,9..40,300;1,9..40,400&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
         .cp-btn {
           display: inline-flex; align-items: center; justify-content: center;

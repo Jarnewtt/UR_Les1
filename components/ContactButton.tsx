@@ -71,7 +71,6 @@ export default function ContactButton() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400&display=swap');
         .cb-qr { flex-shrink: 0; }
         @media (max-width: 600px) { .cb-qr { width: 100%; display: flex; justify-content: center; } }
       `}</style>

@@ -321,7 +321,6 @@ export default function AdminUserPageIndustrial() {
   return (
     <div className="au-layout" style={{ background: t.bg, color: t.ink, transition: "background .3s, color .3s" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         ::selection{background:${t.accent};color:#fff}
         ::-webkit-scrollbar{width:2px} ::-webkit-scrollbar-thumb{background:${t.accent}}

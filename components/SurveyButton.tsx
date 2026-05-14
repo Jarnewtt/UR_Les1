@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { trackSurveyToggle } from "@/lib/analytics"
 
 const SURVEY_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfktzkKEzM8ydmEobW6X5Dy5PDIwoidVu8et621vgk1l3CBIw/viewform?embedded=true"
+  "https://docs.google.com/forms/d/e/1FAIpQLSdoWTGC_5GOFbgfPOVd7nNMQOxbnOmrNqFqJbmEvIp3AUc43Q/viewform?embedded=true"
 
 const BLUE = "#1A1AFF"
 const E: [number, number, number, number] = [0.16, 1, 0.3, 1]

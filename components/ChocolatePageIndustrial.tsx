@@ -163,7 +163,6 @@ useEffect(() => {
     <div style={{ minHeight:"100vh", background:T.bg, color:T.ink,
       overflowX:"clip", fontFamily:"'DM Mono',monospace", transition:TT }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;1,300&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap');
         *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
         html { scroll-behavior:smooth; }
         

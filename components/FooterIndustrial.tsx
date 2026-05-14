@@ -54,7 +54,6 @@ export default function FooterIndustrial({ accentColor: _accentColor, onClose }:
       transition: T,
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Dancing+Script:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
         @keyframes avail-pulse {
           0%, 100% { opacity:1; transform:scale(1); }
           50%       { opacity:0.35; transform:scale(1.7); }
